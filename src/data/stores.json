@@ -1,0 +1,32 @@
+[
+  {
+    "id": "store_001",
+    "store_code": "HT-MUM-001",
+    "store_name": "HomeTown Mumbai Thane",
+    "address": "R-Mall, Ghansoli, Thane",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "pincode": "400701",
+    "region_id": "region_001",
+    "latitude": 19.2183,
+    "longitude": 72.9781,
+    "geofence_radius_meters": 50000,
+    "manager_id": "user_002",
+    "active_status": true
+  },
+  {
+    "id": "store-andheri-001",
+    "store_code": "ANDHERI",
+    "store_name": "HomeTown Mumbai Andheri",
+    "address": "HomeTown Store, Andheri West, Mumbai",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "pincode": "400058",
+    "region_id": "region_001",
+    "latitude": 19.1197,
+    "longitude": 72.8468,
+    "geofence_radius_meters": 50000,
+    "manager_id": "user_002",
+    "active_status": true
+  }
+]

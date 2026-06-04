@@ -1,0 +1,49 @@
+[
+  {
+    "id": "ticket_001",
+    "title": "POS Terminal Not Working",
+    "description": "The POS terminal at billing counter 2 is not accepting card payments since this morning.",
+    "category": "IT Support",
+    "priority": "high",
+    "status": "open",
+    "raised_by": "user_001",
+    "raised_by_name": "Priya Sharma",
+    "store_code": "HT-MUM-001",
+    "assigned_to": "user_002",
+    "comments": [],
+    "created_at": "2026-05-22T10:30:00",
+    "updated_at": "2026-05-22T10:30:00"
+  },
+  {
+    "id": "ticket_002",
+    "title": "Air Conditioning Malfunction",
+    "description": "The AC unit in the sofa section is not cooling properly. Customers are uncomfortable.",
+    "category": "Maintenance",
+    "priority": "medium",
+    "status": "in_progress",
+    "raised_by": "user_003",
+    "raised_by_name": "Anjali Mehta",
+    "store_code": "HT-MUM-001",
+    "assigned_to": "user_002",
+    "comments": [
+      { "id": "cmt_001", "author": "Ramesh Kumar", "text": "Technician has been called, will arrive by 3 PM.", "created_at": "2026-05-21T14:00:00" }
+    ],
+    "created_at": "2026-05-21T09:00:00",
+    "updated_at": "2026-05-21T14:00:00"
+  },
+  {
+    "id": "ticket_003",
+    "title": "Display Lighting Not Working",
+    "description": "Lights in the mattress display section are flickering and two are completely out.",
+    "category": "Maintenance",
+    "priority": "low",
+    "status": "resolved",
+    "raised_by": "user_004",
+    "raised_by_name": "Vikram Singh",
+    "store_code": "HT-MUM-001",
+    "assigned_to": "user_002",
+    "comments": [],
+    "created_at": "2026-05-18T11:00:00",
+    "updated_at": "2026-05-20T16:00:00"
+  }
+]

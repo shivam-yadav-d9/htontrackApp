@@ -1,0 +1,161 @@
+[
+  {
+    "id": "course_001",
+    "title": "HomeTown Brand Induction",
+    "description": "Learn HomeTown's story, brand values, product range, customer promise, and service standards.",
+    "category": "Brand & Culture",
+    "difficulty_level": "beginner",
+    "estimated_duration_minutes": 45,
+    "passing_score": 70,
+    "certificate_enabled": true,
+    "progress_percentage": 100,
+    "status": "completed",
+    "store_code": "HT-MUM-001",
+    "assigned_to": "user_001",
+    "modules": [
+      {
+        "id": "mod_001",
+        "title": "About HomeTown",
+        "lessons": [
+          { "id": "les_001", "title": "Company History", "lesson_type": "text", "duration_minutes": 10, "is_mandatory": true, "is_completed": true },
+          { "id": "les_002", "title": "Brand Values & Promise", "lesson_type": "text", "duration_minutes": 10, "is_mandatory": true, "is_completed": true },
+          { "id": "les_003", "title": "Product Categories Overview", "lesson_type": "text", "duration_minutes": 15, "is_mandatory": true, "is_completed": true }
+        ]
+      }
+    ],
+    "created_at": "2026-01-01T00:00:00"
+  },
+  {
+    "id": "course_002",
+    "title": "Furniture Product Knowledge",
+    "description": "Deep dive into HomeTown's furniture categories: sofas, beds, wardrobes, dining sets, and storage.",
+    "category": "Product Knowledge",
+    "difficulty_level": "beginner",
+    "estimated_duration_minutes": 60,
+    "passing_score": 70,
+    "certificate_enabled": true,
+    "progress_percentage": 100,
+    "status": "completed",
+    "store_code": "HT-MUM-001",
+    "assigned_to": "user_001",
+    "modules": [
+      {
+        "id": "mod_002",
+        "title": "Furniture Fundamentals",
+        "lessons": [
+          { "id": "les_004", "title": "Sofa Types & Materials", "lesson_type": "text", "duration_minutes": 15, "is_mandatory": true, "is_completed": true },
+          { "id": "les_005", "title": "Beds & Wardrobes Guide", "lesson_type": "text", "duration_minutes": 15, "is_mandatory": true, "is_completed": true },
+          { "id": "les_006", "title": "Dining & Storage", "lesson_type": "text", "duration_minutes": 15, "is_mandatory": true, "is_completed": true }
+        ]
+      }
+    ],
+    "created_at": "2026-01-15T00:00:00"
+  },
+  {
+    "id": "course_003",
+    "title": "Sofa Selling Masterclass",
+    "description": "Advanced techniques for sofa sales: needs analysis, fabric knowledge, objection handling, and upselling.",
+    "category": "Sales Training",
+    "difficulty_level": "intermediate",
+    "estimated_duration_minutes": 90,
+    "passing_score": 75,
+    "certificate_enabled": true,
+    "progress_percentage": 60,
+    "status": "in_progress",
+    "store_code": "HT-MUM-001",
+    "assigned_to": "user_001",
+    "modules": [
+      {
+        "id": "mod_003",
+        "title": "Sales Fundamentals",
+        "lessons": [
+          { "id": "les_007", "title": "Customer Needs Analysis", "lesson_type": "text", "duration_minutes": 20, "is_mandatory": true, "is_completed": true },
+          { "id": "les_008", "title": "Fabric & Material Knowledge", "lesson_type": "text", "duration_minutes": 20, "is_mandatory": true, "is_completed": true },
+          { "id": "les_009", "title": "Objection Handling", "lesson_type": "text", "duration_minutes": 25, "is_mandatory": true, "is_completed": false },
+          { "id": "les_010", "title": "Upselling Techniques", "lesson_type": "text", "duration_minutes": 25, "is_mandatory": true, "is_completed": false }
+        ]
+      }
+    ],
+    "created_at": "2026-02-01T00:00:00"
+  },
+  {
+    "id": "course_004",
+    "title": "Mattress Recommendation Training",
+    "description": "Sleep science basics, mattress types — orthopedic, memory foam, coir — and customer consultation techniques.",
+    "category": "Product Knowledge",
+    "difficulty_level": "intermediate",
+    "estimated_duration_minutes": 75,
+    "passing_score": 75,
+    "certificate_enabled": true,
+    "progress_percentage": 0,
+    "status": "not_started",
+    "store_code": "HT-MUM-001",
+    "assigned_to": "user_001",
+    "modules": [],
+    "created_at": "2026-02-15T00:00:00"
+  },
+  {
+    "id": "course_005",
+    "title": "Modular Kitchen Basics",
+    "description": "Introduction to modular kitchen categories, configurations, materials, and lead generation techniques.",
+    "category": "Product Knowledge",
+    "difficulty_level": "intermediate",
+    "estimated_duration_minutes": 80,
+    "passing_score": 70,
+    "certificate_enabled": true,
+    "progress_percentage": 0,
+    "status": "not_started",
+    "store_code": "HT-MUM-001",
+    "assigned_to": "user_001",
+    "modules": [],
+    "created_at": "2026-03-01T00:00:00"
+  },
+  {
+    "id": "course_006",
+    "title": "Customer Service Excellence",
+    "description": "Delivering world-class customer service: greeting, probing, handling complaints, and post-sale follow-up.",
+    "category": "Customer Handling",
+    "difficulty_level": "beginner",
+    "estimated_duration_minutes": 55,
+    "passing_score": 70,
+    "certificate_enabled": true,
+    "progress_percentage": 100,
+    "status": "completed",
+    "store_code": "HT-MUM-001",
+    "assigned_to": "user_001",
+    "modules": [],
+    "created_at": "2026-01-20T00:00:00"
+  },
+  {
+    "id": "course_007",
+    "title": "Visual Merchandising Standards",
+    "description": "HomeTown VM guidelines: display norms, planogram compliance, lighting, pricing, and seasonal themes.",
+    "category": "Store Operations",
+    "difficulty_level": "beginner",
+    "estimated_duration_minutes": 40,
+    "passing_score": 70,
+    "certificate_enabled": false,
+    "progress_percentage": 100,
+    "status": "completed",
+    "store_code": "HT-MUM-001",
+    "assigned_to": "user_001",
+    "modules": [],
+    "created_at": "2026-01-25T00:00:00"
+  },
+  {
+    "id": "course_008",
+    "title": "Store Safety and Compliance",
+    "description": "Safety protocols, fire exits, customer safety, and compliance requirements for HomeTown stores.",
+    "category": "Store Operations",
+    "difficulty_level": "beginner",
+    "estimated_duration_minutes": 35,
+    "passing_score": 70,
+    "certificate_enabled": false,
+    "progress_percentage": 0,
+    "status": "not_started",
+    "store_code": "HT-MUM-001",
+    "assigned_to": "user_001",
+    "modules": [],
+    "created_at": "2026-03-10T00:00:00"
+  }
+]

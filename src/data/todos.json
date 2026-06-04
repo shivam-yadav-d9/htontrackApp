@@ -1,0 +1,71 @@
+[
+  {
+    "id": "todo_001",
+    "user_id": "user_001",
+    "staff_id": "user_001",
+    "store_code": "HT-MUM-001",
+    "title": "Update VM checklist for sofa section",
+    "description": "Review and update visual merchandising checklist for the new sofa arrivals.",
+    "priority": "high",
+    "status": "pending",
+    "todo_type": "task",
+    "related_module": "checklist",
+    "due_date": "2026-05-23T18:00:00.000Z",
+    "created_at": "2026-05-20T09:00:00.000Z"
+  },
+  {
+    "id": "todo_002",
+    "user_id": "user_001",
+    "staff_id": "user_001",
+    "store_code": "HT-MUM-001",
+    "title": "Complete Sofa Selling Masterclass",
+    "description": "Finish the remaining 3 lessons in the Sofa Selling Masterclass course.",
+    "priority": "medium",
+    "status": "in_progress",
+    "todo_type": "learning",
+    "related_module": "courses",
+    "due_date": "2026-05-25T23:59:59.000Z",
+    "created_at": "2026-05-18T10:00:00.000Z"
+  },
+  {
+    "id": "todo_003",
+    "user_id": "user_001",
+    "staff_id": "user_001",
+    "store_code": "HT-MUM-001",
+    "title": "Submit Competitor Price Check PDF",
+    "description": "Fill out the weekly competitor price report and submit to manager.",
+    "priority": "urgent",
+    "status": "pending",
+    "todo_type": "assignment",
+    "related_module": "assignments",
+    "due_date": "2026-05-22T18:00:00.000Z",
+    "created_at": "2026-05-19T09:00:00.000Z"
+  },
+  {
+    "id": "todo_004",
+    "user_id": "user_003",
+    "staff_id": "user_003",
+    "store_code": "HT-MUM-001",
+    "title": "Attend Customer Handling Training",
+    "description": "Complete the Customer Service Excellence module online.",
+    "priority": "medium",
+    "status": "pending",
+    "todo_type": "learning",
+    "related_module": "courses",
+    "due_date": "2026-05-26T23:59:59.000Z",
+    "created_at": "2026-05-20T11:00:00.000Z"
+  },
+  {
+    "id": "todo_005",
+    "user_id": "user_004",
+    "staff_id": "user_004",
+    "store_code": "HT-MUM-001",
+    "title": "Collect 3 Customer Feedback Forms",
+    "description": "Get signed feedback forms from at least 3 customers today.",
+    "priority": "high",
+    "status": "pending",
+    "todo_type": "task",
+    "related_module": "targets",
+    "created_at": "2026-05-22T09:00:00.000Z"
+  }
+]

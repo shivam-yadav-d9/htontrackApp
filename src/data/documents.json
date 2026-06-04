@@ -1,0 +1,51 @@
+[
+  {
+    "id": "doc_001",
+    "user_id": "user_001",
+    "store_code": "HT-MUM-001",
+    "file_name": "Customer_Interaction_Report_May.pdf",
+    "file_type": "PDF",
+    "file_size": 245000,
+    "file_url": "",
+    "upload_status": "uploaded",
+    "approval_status": "approved",
+    "form_status": "APPROVED",
+    "related_entity_type": "assignment",
+    "related_entity_id": "asgn_005",
+    "uploaded_at": "2026-05-18T14:00:00",
+    "created_at": "2026-05-18T14:00:00"
+  },
+  {
+    "id": "doc_002",
+    "user_id": "user_001",
+    "store_code": "HT-MUM-001",
+    "file_name": "Sofa_Display_Photo_May.jpg",
+    "file_type": "JPG",
+    "file_size": 1800000,
+    "file_url": "",
+    "upload_status": "uploaded",
+    "approval_status": "pending",
+    "form_status": "SUBMITTED",
+    "related_entity_type": "assignment",
+    "related_entity_id": "asgn_001",
+    "uploaded_at": "2026-05-19T11:00:00",
+    "created_at": "2026-05-19T11:00:00"
+  },
+  {
+    "id": "doc_003",
+    "user_id": "user_001",
+    "store_code": "HT-MUM-001",
+    "file_name": "Competitor_Price_Check.pdf",
+    "file_type": "PDF",
+    "file_size": 512000,
+    "file_url": "",
+    "upload_status": "uploaded",
+    "approval_status": "rejected",
+    "form_status": "REJECTED",
+    "rejection_reason": "File incomplete. Please include all 3 competitor stores.",
+    "related_entity_type": "assignment",
+    "related_entity_id": "asgn_002",
+    "uploaded_at": "2026-05-15T16:00:00",
+    "created_at": "2026-05-15T16:00:00"
+  }
+]

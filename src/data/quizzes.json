@@ -1,0 +1,57 @@
+[
+  {
+    "id": "quiz_001",
+    "course_id": "course_002",
+    "title": "Furniture Product Knowledge Quiz",
+    "description": "Test your knowledge of HomeTown furniture categories.",
+    "time_limit_minutes": 10,
+    "passing_score": 70,
+    "max_attempts": 3,
+    "attempts_used": 0,
+    "store_code": "HT-MUM-001",
+    "status": "active",
+    "questions": [
+      { "id": "q_001", "question_text": "Which wood type is most durable for outdoor furniture?", "question_type": "single_choice", "marks": 20, "options": [{ "id": "a", "option_text": "Teak", "is_correct": true }, { "id": "b", "option_text": "Pine", "is_correct": false }, { "id": "c", "option_text": "MDF", "is_correct": false }, { "id": "d", "option_text": "Plywood", "is_correct": false }] },
+      { "id": "q_002", "question_text": "What does 'sectional sofa' mean?", "question_type": "single_choice", "marks": 20, "options": [{ "id": "a", "option_text": "A 2-seater sofa", "is_correct": false }, { "id": "b", "option_text": "An L-shaped modular sofa", "is_correct": true }, { "id": "c", "option_text": "A reclinable sofa", "is_correct": false }, { "id": "d", "option_text": "A wall-mounted sofa", "is_correct": false }] },
+      { "id": "q_003", "question_text": "Memory foam was originally developed by NASA.", "question_type": "true_false", "marks": 20, "options": [{ "id": "a", "option_text": "True", "is_correct": true }, { "id": "b", "option_text": "False", "is_correct": false }] },
+      { "id": "q_004", "question_text": "Which fabric is easiest to clean?", "question_type": "single_choice", "marks": 20, "options": [{ "id": "a", "option_text": "Velvet", "is_correct": false }, { "id": "b", "option_text": "Microfiber", "is_correct": true }, { "id": "c", "option_text": "Linen", "is_correct": false }, { "id": "d", "option_text": "Cotton", "is_correct": false }] },
+      { "id": "q_005", "question_text": "Standard HomeTown sofa warranty duration?", "question_type": "single_choice", "marks": 20, "options": [{ "id": "a", "option_text": "1 year", "is_correct": false }, { "id": "b", "option_text": "2 years", "is_correct": false }, { "id": "c", "option_text": "3 years", "is_correct": true }, { "id": "d", "option_text": "5 years", "is_correct": false }] }
+    ],
+    "created_at": "2026-01-20T00:00:00"
+  },
+  {
+    "id": "quiz_002",
+    "course_id": "course_003",
+    "title": "Sofa Sales Quiz",
+    "description": "Test your sofa sales techniques and product knowledge.",
+    "time_limit_minutes": 8,
+    "passing_score": 75,
+    "max_attempts": 3,
+    "attempts_used": 1,
+    "store_code": "HT-MUM-001",
+    "status": "active",
+    "questions": [
+      { "id": "q_006", "question_text": "Which selling technique should you use first with a new customer?", "question_type": "single_choice", "marks": 34, "options": [{ "id": "a", "option_text": "Show the most expensive product", "is_correct": false }, { "id": "b", "option_text": "Greet and probe for needs", "is_correct": true }, { "id": "c", "option_text": "Offer a discount immediately", "is_correct": false }, { "id": "d", "option_text": "Show the latest catalogue", "is_correct": false }] },
+      { "id": "q_007", "question_text": "Upselling means suggesting a cheaper alternative.", "question_type": "true_false", "marks": 33, "options": [{ "id": "a", "option_text": "True", "is_correct": false }, { "id": "b", "option_text": "False", "is_correct": true }] },
+      { "id": "q_008", "question_text": "Microfiber sofa benefit for families with pets?", "question_type": "single_choice", "marks": 33, "options": [{ "id": "a", "option_text": "Lower cost", "is_correct": false }, { "id": "b", "option_text": "Easy to clean and pet-hair resistant", "is_correct": true }, { "id": "c", "option_text": "More colors", "is_correct": false }, { "id": "d", "option_text": "Softer feel", "is_correct": false }] }
+    ],
+    "created_at": "2026-02-05T00:00:00"
+  },
+  {
+    "id": "quiz_003",
+    "course_id": "course_006",
+    "title": "Customer Service Excellence Quiz",
+    "description": "Test your understanding of customer service best practices.",
+    "time_limit_minutes": 8,
+    "passing_score": 70,
+    "max_attempts": 3,
+    "attempts_used": 1,
+    "store_code": "HT-MUM-001",
+    "status": "active",
+    "questions": [
+      { "id": "q_009", "question_text": "What is the first step in the HomeTown customer greeting protocol?", "question_type": "single_choice", "marks": 50, "options": [{ "id": "a", "option_text": "Smile and make eye contact", "is_correct": true }, { "id": "b", "option_text": "Ask about budget", "is_correct": false }, { "id": "c", "option_text": "Show the sale section", "is_correct": false }, { "id": "d", "option_text": "Offer water", "is_correct": false }] },
+      { "id": "q_010", "question_text": "When a customer complains, your first response should be to apologize and listen.", "question_type": "true_false", "marks": 50, "options": [{ "id": "a", "option_text": "True", "is_correct": true }, { "id": "b", "option_text": "False", "is_correct": false }] }
+    ],
+    "created_at": "2026-01-25T00:00:00"
+  }
+]
