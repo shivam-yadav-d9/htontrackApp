@@ -107,19 +107,19 @@ async function fetchAttendanceByStore(): Promise<{ summary: StoreViewSummary; st
 
 function designationBg(desig: string): { bg: string; text: string } {
   const d = (desig || "").toUpperCase();
-  if (d.includes("STORE KARTA"))        return { bg: "#FEF9C3", text: "#854D0E" };
-  if (d.includes("REGIONAL"))           return { bg: "#EDE9FE", text: "#5B21B6" };
-  if (d.includes("DEPARTMENT HEAD"))    return { bg: "#DBEAFE", text: "#1E40AF" };
+  if (d.includes("STORE KARTA")) return { bg: "#FEF9C3", text: "#854D0E" };
+  if (d.includes("REGIONAL")) return { bg: "#EDE9FE", text: "#5B21B6" };
+  if (d.includes("DEPARTMENT HEAD")) return { bg: "#DBEAFE", text: "#1E40AF" };
   if (d.includes("DEPARTMENT MANAGER")) return { bg: "#EAF2FB", text: "#102B45" };
-  if (d.includes("HEAD CASHIER"))       return { bg: "#DCFCE7", text: "#166534" };
-  if (d.includes("WAREHOUSE"))          return { bg: "#FFEDD5", text: "#C2410C" };
+  if (d.includes("HEAD CASHIER")) return { bg: "#DCFCE7", text: "#166534" };
+  if (d.includes("WAREHOUSE")) return { bg: "#FFEDD5", text: "#C2410C" };
   return { bg: "#F3F4F6", text: "#6B7280" };
 }
 
 function deptBg(dept: string): { bg: string; text: string } {
   const d = (dept || "").toUpperCase();
-  if (d.includes("FURNITURE"))  return { bg: "#EAF2FB", text: "#102B45" };
-  if (d.includes("HOMEWARE"))   return { bg: "#DCFCE7", text: "#166534" };
+  if (d.includes("FURNITURE")) return { bg: "#EAF2FB", text: "#102B45" };
+  if (d.includes("HOMEWARE")) return { bg: "#DCFCE7", text: "#166534" };
   if (d.includes("HOME DECOR")) return { bg: "#FFF4D8", text: "#B7791F" };
   if (d.includes("DESIGN") || d.includes("MODULAR")) return { bg: "#FFEDD5", text: "#C2410C" };
   if (d.includes("ACCOUNT") || d.includes("FINANCE")) return { bg: "#F0FDF4", text: "#166534" };
@@ -128,7 +128,7 @@ function deptBg(dept: string): { bg: string; text: string } {
 
 function statusColor(s: string): { bg: string; text: string; border: string } {
   if (s === "Present") return { bg: "#DCFCE7", text: "#166534", border: "#BBF7D0" };
-  if (s === "Late")    return { bg: "#FFF4D8", text: "#B7791F", border: "#F5D28A" };
+  if (s === "Late") return { bg: "#FFF4D8", text: "#B7791F", border: "#F5D28A" };
   return { bg: "#FEE2E2", text: "#B91C1C", border: "#FECACA" };
 }
 
@@ -488,7 +488,7 @@ async function fetchAttendanceJoined(period?: string): Promise<{ summary: LiveSu
   }
 }
 
-function statusColor(s: string) {
+function attendanceStatusColor(s: string) {
   if (s === "Present") return { bg: C.greenBg, text: C.green, border: C.greenBorder };
   if (s === "Absent") return { bg: C.redBg, text: C.red, border: C.redBorder };
   if (s === "On Leave") return { bg: C.goldBg, text: C.gold, border: C.goldBorder };
@@ -505,10 +505,10 @@ function MetricBox({ label, value, color }: { label: string; value: string | num
 }
 
 function AttendeeCard({ row, view }: { row: AttendeeRow; view: ViewTab }) {
-  const sc = statusColor(row.status);
+  const sc = attendanceStatusColor(row.status);
   return (
     <View style={styles.rowCard}>
-      <View style={styles.rowTop}>
+      <View style={styles.rowTop}>s
         <View style={styles.avatarSmall}>
           <Text style={styles.avatarText}>{row.name.split(" ").map(n => n[0]).slice(0, 2).join("")}</Text>
         </View>

@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const htLogo = require("../../../../assets/images/hometown-logo.png");
+const htLogo = require("../../../assets/images/hometown-logo.png");
 
 const C = {
   navy: "#102B45", orange: "#C95F18", gold: "#B7791F", beige: "#F6EBDC",
@@ -43,18 +43,18 @@ type Certificate = {
 
 
 const BADGE_CFG: Record<Badge, { seal: string; bg: string; text: string; border: string; color: string }> = {
-  Gold:          { seal: "🥇", bg: "#FEFCE8", text: "#A16207", border: "#FDE047", color: "#B7791F" },
-  Silver:        { seal: "🥈", bg: "#F8FAFC", text: "#475569", border: "#CBD5E1", color: "#64748B" },
-  Bronze:        { seal: "🥉", bg: "#FFF7ED", text: "#C2410C", border: "#FED7AA", color: "#C2623E" },
+  Gold: { seal: "🥇", bg: "#FEFCE8", text: "#A16207", border: "#FDE047", color: "#B7791F" },
+  Silver: { seal: "🥈", bg: "#F8FAFC", text: "#475569", border: "#CBD5E1", color: "#64748B" },
+  Bronze: { seal: "🥉", bg: "#FFF7ED", text: "#C2410C", border: "#FED7AA", color: "#C2623E" },
   Participation: { seal: "🎓", bg: "#EFF6FF", text: "#1D4ED8", border: "#BFDBFE", color: "#3B82F6" },
-  None:          { seal: "—",  bg: "#F9FAFB", text: "#6B7280", border: "#E5E7EB", color: "#9CA3AF" },
+  None: { seal: "—", bg: "#F9FAFB", text: "#6B7280", border: "#E5E7EB", color: "#9CA3AF" },
 };
 
 const STATUS_CFG: Record<CertStatus, { bg: string; text: string; border: string }> = {
-  Issued:     { bg: "#F0FDF4", text: "#166534", border: "#BBF7D0" },
+  Issued: { bg: "#F0FDF4", text: "#166534", border: "#BBF7D0" },
   Downloaded: { bg: "#EFF6FF", text: "#1D4ED8", border: "#BFDBFE" },
-  Revoked:    { bg: "#FEF2F2", text: "#B91C1C", border: "#FECACA" },
-  Reissued:   { bg: "#FFFBEB", text: "#B45309", border: "#FDE68A" },
+  Revoked: { bg: "#FEF2F2", text: "#B91C1C", border: "#FECACA" },
+  Reissued: { bg: "#FFFBEB", text: "#B45309", border: "#FDE68A" },
 };
 
 function mapApiCert(raw: any, idx: number): Certificate {

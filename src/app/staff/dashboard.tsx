@@ -1,4 +1,6 @@
 import { router } from "expo-router";
+import ScreenLayout from "@/components/ScreenLayout";
+
 import {
   Activity,
   AlertTriangle,
@@ -599,16 +601,18 @@ export default function DashboardScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.root}>
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
-        >
+    <ScreenLayout title="Dashboard">
+
+      <SafeAreaView style={styles.safe} edges={[]}>
+        <View style={styles.root}>
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+            }
+          >
           <View style={styles.header}>
             <View style={styles.headerGlowOne} />
             <View style={styles.headerGlowTwo} />
@@ -1214,8 +1218,8 @@ export default function DashboardScreen() {
                     style={[
                       styles.listRow,
                       index <
-                        Math.min(dashboardData.announcements.length, 2) - 1 &&
-                        styles.listDivider,
+                      Math.min(dashboardData.announcements.length, 2) - 1 &&
+                      styles.listDivider,
                     ]}
                     activeOpacity={0.82}
                     onPress={() => router.push("/staff/announcements" as any)}
@@ -1257,8 +1261,10 @@ export default function DashboardScreen() {
 
           <View style={styles.bottomSpacer} />
         </ScrollView>
-      </View>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
+    </ScreenLayout>
+
   );
 }
 

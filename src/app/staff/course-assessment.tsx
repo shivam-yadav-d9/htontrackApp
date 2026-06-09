@@ -1,6 +1,7 @@
+import { storage } from "@/utils/storage";
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, ChevronLeft, ChevronRight, Send } from 'lucide-react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, Alert, ScrollView, StyleSheet,
   Text, TouchableOpacity, View,
@@ -8,43 +9,80 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { COLORS, BorderRadius, Spacing, Shadow } from '@/constants/theme';
-import { courseService } from '@/services/course.service';
+import { lmsService } from '@/services/lms.service';
 
 type Question = {
-  id: string;
+  _id: string;
   question: string;
   options: string[];
-  marks?: number;
-  difficulty?: string;
+  correctAnswer: number;
+  marks: number;
 };
 
 export default function CourseAssessmentScreen() {
   const { courseId } = useLocalSearchParams<{ courseId: string }>();
+
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [savingAnswer, setSavingAnswer] = useState(false);
+
+  // Hold the attemptId for the entire session
+  const attemptIdRef = useRef<string | null>(null);
 
   const load = useCallback(async () => {
     if (!courseId || courseId === 'undefined') return;
+
     setLoading(true);
     try {
-      const course = await courseService.getStaffCourseLMS(courseId);
-      const qs: Question[] = ((course as any).questions ?? []).filter(
-        (q: any) => q.status === 'active' || !q.status,
+      // 1. Fetch questions
+      const fetchedQuestions = await lmsService.getCourseQuestions(courseId);
+      setQuestions(
+        Array.isArray(fetchedQuestions)
+          ? fetchedQuestions
+          : fetchedQuestions?.data || []
       );
-      if (qs.length === 0) {
-        Alert.alert('No Questions', 'This course has no assessment questions yet.', [
-          { text: 'Go Back', onPress: () => router.back() },
-        ]);
+      // 2. Start attempt — get employeeId from AsyncStorage
+      const raw = await storage.getItem("karmyogi_user");
+
+      console.log("RAW USER =>", raw);
+
+      const user = raw ? JSON.parse(raw) : null;
+
+      console.log("PARSED USER =>", user);
+
+      const employeeId =
+        user?._id ||
+        user?.id ||
+        user?.employeeId;
+      console.log("USER OBJECT =>", user);
+      console.log("EMPLOYEE ID =>", employeeId);
+
+      if (!employeeId) {
+        Alert.alert(
+          "Error",
+          "User session not found. Please log in again."
+        );
+
+        router.replace("/auth/login");
         return;
       }
-      setQuestions(qs);
+
+      const attempt = await lmsService.startAttempt(
+        courseId,
+        employeeId
+      );
+
+      console.log("ATTEMPT RESPONSE", attempt);
+
+      attemptIdRef.current = attempt?.data?._id || attempt?._id;
     } catch (err) {
-      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to load', [
-        { text: 'Go Back', onPress: () => router.back() },
-      ]);
+      Alert.alert(
+        'Error',
+        err instanceof Error ? err.message : 'Failed to load assessment',
+      );
     } finally {
       setLoading(false);
     }
@@ -52,12 +90,28 @@ export default function CourseAssessmentScreen() {
 
   useEffect(() => { load(); }, [load]);
 
-  function selectOption(questionId: string, option: string) {
-    setAnswers((prev) => ({ ...prev, [questionId]: option }));
+  // Select an option — save answer to API immediately
+  async function selectOption(questionId: string, optionIndex: number) {
+    // Optimistically update UI
+    setAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
+
+    const attemptId = attemptIdRef.current;
+    if (!attemptId) return;
+
+    setSavingAnswer(true);
+    try {
+      await lmsService.saveAnswer(attemptId, questionId, optionIndex);
+    } catch (err) {
+      // Non-blocking — answer is still tracked locally
+      console.warn('Failed to save answer remotely:', err);
+    } finally {
+      setSavingAnswer(false);
+    }
   }
 
   function handleSubmit() {
-    const unanswered = questions.filter((q) => !answers[q.id]);
+    const unanswered = questions.filter(q => answers[q._id] === undefined);
+
     if (unanswered.length > 0) {
       Alert.alert(
         'Incomplete',
@@ -69,6 +123,7 @@ export default function CourseAssessmentScreen() {
       );
       return;
     }
+
     Alert.alert(
       'Submit Assessment',
       'Are you sure you want to submit? You cannot change answers after submission.',
@@ -80,21 +135,62 @@ export default function CourseAssessmentScreen() {
   }
 
   async function doSubmit() {
+    const attemptId = attemptIdRef.current;
+
+    if (!attemptId) {
+      Alert.alert(
+        "Error",
+        "Attempt session missing. Please restart the assessment."
+      );
+      return;
+    }
+
     setSubmitting(true);
+
     try {
-      const payload = questions.map((q) => ({
-        question_id: q.id,
-        selected_answer: answers[q.id] ?? '',
-      }));
-      await courseService.submitAssessment(courseId, payload);
-      router.replace({ pathname: '/staff/course-result', params: { courseId } });
+      const response = await lmsService.submitAttempt(
+        attemptId
+      );
+
+      const result =
+        response?.data || response;
+
+      Alert.alert(
+        "Success",
+        "Assessment Submitted Successfully"
+      );
+
+      router.replace({
+        pathname: "/staff/course-result",
+        params: {
+          courseId,
+          percentage: String(
+            result?.percentage || 0
+          ),
+          passed: String(
+            result?.passed || false
+          ),
+          obtainedMarks: String(
+            result?.obtainedMarks || 0
+          ),
+          totalMarks: String(
+            result?.totalMarks || 0
+          ),
+        },
+      });
     } catch (err) {
-      Alert.alert('Error', err instanceof Error ? err.message : 'Submission failed');
+      Alert.alert(
+        "Error",
+        err instanceof Error
+          ? err.message
+          : "Submission failed"
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
+  // ─── Loading state ────────────────────────────────────────────────────────
   if (loading) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
@@ -111,6 +207,7 @@ export default function CourseAssessmentScreen() {
     );
   }
 
+  // ─── No questions ─────────────────────────────────────────────────────────
   if (!loading && questions.length === 0) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
@@ -133,10 +230,10 @@ export default function CourseAssessmentScreen() {
   const total = questions.length;
   const answered = Object.keys(answers).length;
   const question = questions[currentIdx];
-  const selected = answers[question?.id] ?? null;
-
+  const selected = answers[question?._id];
   if (!question) return null;
 
+  // ─── Main UI ──────────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
@@ -147,20 +244,32 @@ export default function CourseAssessmentScreen() {
           <Text style={styles.headerTitle}>Assessment</Text>
           <Text style={styles.headerSub}>{answered}/{total} answered</Text>
         </View>
+        {/* Subtle saving indicator */}
+        {savingAnswer && (
+          <ActivityIndicator size="small" color="rgba(255,255,255,0.7)" style={{ marginRight: 4 }} />
+        )}
       </View>
 
       {/* Question dots */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dotsRow} contentContainerStyle={styles.dotsContent}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.dotsRow}
+        contentContainerStyle={styles.dotsContent}
+      >
         {questions.map((q, i) => (
           <TouchableOpacity
-            key={q.id}
+            key={q._id}
             onPress={() => setCurrentIdx(i)}
             style={[
               styles.dot,
-              answers[q.id] ? styles.dotAnswered : styles.dotUnanswered,
+              answers[q._id] !== undefined ? styles.dotAnswered : styles.dotUnanswered,
               i === currentIdx && styles.dotActive,
-            ]}>
-            <Text style={[styles.dotText, i === currentIdx && { color: COLORS.white }]}>{i + 1}</Text>
+            ]}
+          >
+            <Text style={[styles.dotText, i === currentIdx && { color: COLORS.white }]}>
+              {i + 1}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -170,21 +279,10 @@ export default function CourseAssessmentScreen() {
         <View style={[styles.questionCard, Shadow.card]}>
           <View style={styles.questionMeta}>
             <Text style={styles.questionNum}>Q{currentIdx + 1}</Text>
-            {question.difficulty && (
-              <View style={[
-                styles.diffBadge,
-                { backgroundColor: question.difficulty === 'easy' ? COLORS.success + '22' : COLORS.warning + '22' },
-              ]}>
-                <Text style={[
-                  styles.diffText,
-                  { color: question.difficulty === 'easy' ? COLORS.success : COLORS.warning },
-                ]}>
-                  {question.difficulty}
-                </Text>
-              </View>
-            )}
             {question.marks && (
-              <Text style={styles.marksText}>{question.marks} mark{question.marks > 1 ? 's' : ''}</Text>
+              <Text style={styles.marksText}>
+                {question.marks} mark{question.marks > 1 ? 's' : ''}
+              </Text>
             )}
           </View>
           <Text style={styles.questionText}>{question.question}</Text>
@@ -192,12 +290,14 @@ export default function CourseAssessmentScreen() {
 
         {/* Options */}
         {(question.options ?? []).map((option, oi) => {
-          const isSelected = selected === option;
+          const isSelected = selected === oi;
           return (
             <TouchableOpacity
               key={oi}
               style={[styles.optionRow, isSelected && styles.optionSelected]}
-              onPress={() => selectOption(question.id, option)}>
+              onPress={() => selectOption(question._id, oi)}
+              disabled={savingAnswer}
+            >
               <View style={[styles.optionRadio, isSelected && styles.optionRadioSelected]}>
                 {isSelected && <View style={styles.optionRadioInner} />}
               </View>
@@ -215,8 +315,9 @@ export default function CourseAssessmentScreen() {
       <View style={styles.navBar}>
         <TouchableOpacity
           style={[styles.navBtn, currentIdx === 0 && styles.navBtnDisabled]}
-          onPress={() => setCurrentIdx((i) => Math.max(0, i - 1))}
-          disabled={currentIdx === 0}>
+          onPress={() => setCurrentIdx(i => Math.max(0, i - 1))}
+          disabled={currentIdx === 0}
+        >
           <ChevronLeft size={18} color={currentIdx === 0 ? COLORS.border : COLORS.orange} />
           <Text style={[styles.navText, currentIdx === 0 && { color: COLORS.border }]}>Prev</Text>
         </TouchableOpacity>
@@ -224,7 +325,8 @@ export default function CourseAssessmentScreen() {
         {currentIdx < total - 1 ? (
           <TouchableOpacity
             style={styles.navBtnNext}
-            onPress={() => setCurrentIdx((i) => Math.min(total - 1, i + 1))}>
+            onPress={() => setCurrentIdx(i => Math.min(total - 1, i + 1))}
+          >
             <Text style={styles.navBtnNextText}>Next</Text>
             <ChevronRight size={18} color={COLORS.white} />
           </TouchableOpacity>
@@ -232,14 +334,16 @@ export default function CourseAssessmentScreen() {
           <TouchableOpacity
             style={[styles.navBtnNext, { backgroundColor: COLORS.success }]}
             onPress={handleSubmit}
-            disabled={submitting}>
-            {submitting
-              ? <ActivityIndicator color={COLORS.white} />
-              : <>
-                  <Send size={16} color={COLORS.white} />
-                  <Text style={styles.navBtnNextText}>Submit</Text>
-                </>
-            }
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
+              <>
+                <Send size={16} color={COLORS.white} />
+                <Text style={styles.navBtnNextText}>Submit</Text>
+              </>
+            )}
           </TouchableOpacity>
         )}
       </View>
@@ -262,9 +366,23 @@ const styles = StyleSheet.create({
   headerSub: { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
-  dotsRow: { maxHeight: 56, borderBottomWidth: 1, borderBottomColor: COLORS.border, backgroundColor: COLORS.white },
-  dotsContent: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: Spacing.two, paddingVertical: 10, gap: 6 },
-  dot: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5 },
+  dotsRow: {
+    maxHeight: 56,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    backgroundColor: COLORS.white,
+  },
+  dotsContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 10,
+    gap: 6,
+  },
+  dot: {
+    width: 30, height: 30, borderRadius: 15,
+    alignItems: 'center', justifyContent: 'center', borderWidth: 1.5,
+  },
   dotAnswered: { backgroundColor: COLORS.success + '22', borderColor: COLORS.success },
   dotUnanswered: { backgroundColor: COLORS.beigeLight, borderColor: COLORS.border },
   dotActive: { backgroundColor: COLORS.orange, borderColor: COLORS.orange },
@@ -279,9 +397,10 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   questionMeta: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, flexWrap: 'wrap' },
-  questionNum: { fontSize: 12, fontWeight: '900', color: COLORS.orange, textTransform: 'uppercase', letterSpacing: 1 },
-  diffBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
-  diffText: { fontSize: 11, fontWeight: '700', textTransform: 'capitalize' },
+  questionNum: {
+    fontSize: 12, fontWeight: '900', color: COLORS.orange,
+    textTransform: 'uppercase', letterSpacing: 1,
+  },
   marksText: { fontSize: 12, color: COLORS.gray },
   questionText: { fontSize: 15, fontWeight: '700', color: COLORS.grayDark, lineHeight: 22 },
 

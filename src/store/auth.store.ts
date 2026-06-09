@@ -42,20 +42,43 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ user: null, access_token: null, refresh_token: null, is_authenticated: false });
     }
   },
-
   restoreSession: async () => {
     try {
       const token = await storage.getItem(TOKEN_KEY);
-      const refresh = await storage.getItem(REFRESH_KEY);
-      const userStr = await storage.getItem(USER_KEY);
-      if (token && userStr) {
-        const user = JSON.parse(userStr) as User;
-        set({ user, access_token: token, refresh_token: refresh, is_authenticated: true });
+      const refreshToken = await storage.getItem(REFRESH_KEY);
+      const userString = await storage.getItem(USER_KEY);
+
+      if (token && userString) {
+        const user = JSON.parse(userString);
+
+        set({
+          user,
+          access_token: token,
+          refresh_token: refreshToken,
+          is_authenticated: true,
+          is_loading: false,
+        });
+
+        return;
       }
-    } catch {
-      // session restore failed — stay logged out
-    } finally {
-      set({ is_loading: false });
+
+      set({
+        user: null,
+        access_token: null,
+        refresh_token: null,
+        is_authenticated: false,
+        is_loading: false,
+      });
+    } catch (error) {
+      console.log(error);
+
+      set({
+        user: null,
+        access_token: null,
+        refresh_token: null,
+        is_authenticated: false,
+        is_loading: false,
+      });
     }
   },
 }));

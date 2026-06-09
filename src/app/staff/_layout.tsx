@@ -104,13 +104,13 @@ export default function StaffLayout() {
       <Tabs.Screen
         name="assignments"
         options={{
-          title: "Assignments",
+          title: "LMS",
           tabBarIcon: ({ focused }) => (
             <TabIcon
               focused={focused}
-              label="Tasks"
+              label="LMS"
               icon={
-                <ClipboardList
+                <BookOpenCheck
                   size={20}
                   color={focused ? activeColor : inactiveColor}
                   strokeWidth={focused ? 2.7 : 2.2}
@@ -141,7 +141,7 @@ export default function StaffLayout() {
         }}
       />
 
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="learning"
         options={{
           title: "Learning",
@@ -159,8 +159,8 @@ export default function StaffLayout() {
             />
           ),
         }}
-      />
-
+      /> */}
+{/* 
       <Tabs.Screen
         name="work"
         options={{
@@ -179,7 +179,7 @@ export default function StaffLayout() {
             />
           ),
         }}
-      />
+      /> */}
 
       <Tabs.Screen
         name="profile"
@@ -255,6 +255,12 @@ export default function StaffLayout() {
       {/* Profile Essentials */}
       <Tabs.Screen name="documents" options={{ href: null }} />
       <Tabs.Screen name="edit-profile" options={{ href: null }} />
+
+
+
+      <Tabs.Screen name="settings" options={{ href: null }} />
+      <Tabs.Screen name="about" options={{ href: null }} />
+      <Tabs.Screen name="help" options={{ href: null }} />
     </Tabs>
   );
 }

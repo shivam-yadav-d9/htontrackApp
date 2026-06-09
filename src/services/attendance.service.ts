@@ -1,6 +1,7 @@
 import { APP_MODE } from '@/config/appMode';
 import { api } from './api';
 import { localDb } from './localJsonDb';
+import { useAuthStore } from '@/store/auth.store';
 import type {
   AttendanceCorrection,
   AttendanceCorrectionPayload,
@@ -218,18 +219,55 @@ export const attendanceService = {
     return res.data;
   },
 
-  async checkIn(payload: LocationPayload): Promise<CheckInResponse> {
-    const res = await api.post('/staff/attendance/check-in', payload);
-    return res.data;
+  async checkIn(payload: {
+    latitude: number;
+    longitude: number;
+  }) {
+    const user = useAuthStore.getState().user;
+
+    console.log("CHECKIN API", {
+      employeeId: user?.id,
+      lat: payload.latitude,
+      lang: payload.longitude,
+    });
+
+    return api.post(
+      "/ontrack/attendance/check-in",
+      {
+        employeeId: user?.id,
+        lat: payload.latitude.toString(),
+        lang: payload.longitude.toString(),
+      }
+    );
   },
 
-  async checkOut(payload: LocationPayload): Promise<CheckOutResponse> {
-    const res = await api.post('/staff/attendance/check-out', payload);
-    return res.data;
+  async checkOut(payload: {
+    latitude: number;
+    longitude: number;
+  }) {
+    const user = useAuthStore.getState().user;
+
+    console.log("CHECKOUT API", {
+      employeeId: user?.id,
+      lat: payload.latitude,
+      lang: payload.longitude,
+    });
+
+    return api.post(
+      "/ontrack/attendance/check-out",
+      {
+        employeeId: user?.id,
+        lat: payload.latitude.toString(),
+        lang: payload.longitude.toString(),
+      }
+    );
   },
 
-  async getMyAttendance(): Promise<MyAttendanceResponse> {
-    const res = await api.get('/staff/attendance/my');
+  async getAttendanceHistory(employeeId: string) {
+    const res = await api.get(
+      `/ontrack/attendance/${employeeId}`
+    );
+
     return res.data;
   },
 
@@ -345,10 +383,43 @@ export const attendanceService = {
 
   // ── Backward-compatible aliases ───────────────────────────────────────────
 
-  async getHistory(): Promise<MyAttendanceResponse> {
-    return attendanceService.getMyAttendance();
-  },
+  // async getHistory(): Promise<MyAttendanceResponse> {
+  //   return attendanceService.getMyAttendance();
+  // },
 
+  async getMyAttendance() {
+    const user = useAuthStore.getState().user;
+
+    const records = await api.get(
+      `/ontrack/attendance/${user?.id}`
+    );
+
+    return {
+      active_session:
+        records.find((x: any) => x.status === "OPEN") || null,
+
+      sessions: records.map((item: any) => ({
+        id: item._id,
+
+        attendanceDate: item.attendanceDate,
+        checkIn: item.checkIn,
+        checkOut: item.checkOut,
+
+        durationMinutes: item.durationMinutes,
+
+        status: item.status,
+
+        checkInType: item.checkInType,
+        checkOutType: item.checkOutType,
+
+        checkInLocation: item.checkInLocation,
+        checkOutLocation: item.checkOutLocation,
+
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      })),
+    };
+  },
   async getManagerAttendance() {
     const res = await api.get('/manager/attendance/today');
     return res.data;

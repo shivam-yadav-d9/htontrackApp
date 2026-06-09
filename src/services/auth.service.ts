@@ -54,13 +54,51 @@ async function offlineLogin(email: string, password: string): Promise<LoginRespo
 // ── Public service ─────────────────────────────────────────────────────────────
 
 export const authService = {
-  loginWithEmail(payload: LoginRequest): Promise<LoginResponse> {
+  async loginWithEmail(payload: LoginRequest): Promise<LoginResponse> {
+    console.log("LOGIN API CALLED", payload);
+
     if (APP_MODE === 'offline_apk') {
       return offlineLogin(payload.email, payload.password);
     }
-    return api.post<LoginResponse>('/auth/login', payload);
+
+    const result = await api.post<any>(
+      '/users/login',
+      payload
+    );
+
+    console.log("LOGIN API RESPONSE", result);
+
+    return {
+      access_token: 'dummy-token',
+      refresh_token: 'dummy-token',
+      token_type: 'bearer',
+
+      user: {
+        id: result._id,
+        full_name: result.name,
+        email: result.email,
+
+        role:
+          result.role === "ADMIN"
+            ? "ADMIN"
+            : result.role === "MANAGER"
+              ? "MANAGER"
+              : "STAFF",
+
+        is_active: result.isActive,
+      },
+    };
   },
 
+  async registerUser(payload: {
+    name: string;
+    email: string;
+    phone: string;
+    role: string;
+    siteId: string;
+  }) {
+    return api.post('/users', payload);
+  },
   getMe(): Promise<MeResponse> {
     if (APP_MODE === 'offline_apk') {
       return Promise.resolve({ user: { id: '', full_name: '', email: '', role: 'STAFF' } });

@@ -1,5 +1,7 @@
 import { TrendingDown, TrendingUp } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
+import ScreenLayout from "@/components/ScreenLayout";
+
 import {
   ActivityIndicator,
   RefreshControl,
@@ -109,116 +111,120 @@ export default function TargetsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <StaffPageHeader title="My Target" subtitle="Performance Overview" />
-      <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.orange]} />}
-      >
-        {/* Period selector */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.periodRow} contentContainerStyle={{ gap: 8, paddingRight: 16 }}>
-          {PERIODS.map((p) => (
-            <TouchableOpacity
-              key={p.key}
-              style={[styles.periodChip, periodKey === p.key && styles.periodChipActive]}
-              onPress={() => { setPeriodKey(p.key); setLoading(true); }}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.periodChipText, periodKey === p.key && styles.periodChipTextActive]}>
-                {p.label}
+    <ScreenLayout title="Targets">
+
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <StaffPageHeader title="My Target" subtitle="Performance Overview" />
+        <ScrollView
+          contentContainerStyle={styles.content}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.orange]} />}
+        >
+          {/* Period selector */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.periodRow} contentContainerStyle={{ gap: 8, paddingRight: 16 }}>
+            {PERIODS.map((p) => (
+              <TouchableOpacity
+                key={p.key}
+                style={[styles.periodChip, periodKey === p.key && styles.periodChipActive]}
+                onPress={() => { setPeriodKey(p.key); setLoading(true); }}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.periodChipText, periodKey === p.key && styles.periodChipTextActive]}>
+                  {p.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {loading ? (
+            <ActivityIndicator color={COLORS.orange} style={{ marginTop: 32 }} />
+          ) : !target ? (
+            <AppCard style={styles.noTarget}>
+              <Text style={styles.noTargetTitle}>No Target Assigned</Text>
+              <Text style={styles.noTargetSub}>
+                Your manager or head office has not set a target for {PERIODS.find((p) => p.key === periodKey)?.label ?? periodKey}.
               </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {loading ? (
-          <ActivityIndicator color={COLORS.orange} style={{ marginTop: 32 }} />
-        ) : !target ? (
-          <AppCard style={styles.noTarget}>
-            <Text style={styles.noTargetTitle}>No Target Assigned</Text>
-            <Text style={styles.noTargetSub}>
-              Your manager or head office has not set a target for {PERIODS.find((p) => p.key === periodKey)?.label ?? periodKey}.
-            </Text>
-          </AppCard>
-        ) : (
-          <>
-            {/* Main achievement card */}
-            <AppCard style={styles.mainCard}>
-              <View style={styles.mainTop}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.periodLabel}>{PERIODS.find((p) => p.key === periodKey)?.label ?? periodKey}</Text>
-                  <Text style={styles.mainTitle}>Monthly Sales Target</Text>
-                </View>
-                <View style={[styles.riskBadge, { backgroundColor: color + '20' }]}>
-                  <Text style={[styles.riskText, { color }]}>{riskLabel(pct)}</Text>
-                </View>
-              </View>
-
-              <View style={styles.pctRow}>
-                <Text style={[styles.pctBig, { color }]}>{pct}%</Text>
-                <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={styles.targetAmt}>{formatInr(target.target_amount)}</Text>
-                  <Text style={styles.targetAmtLabel}>Target</Text>
-                </View>
-              </View>
-
-              <ProgressBar value={Math.min(pct, 100)} height={10} color={color} showLabel />
-
-              <View style={styles.amtRow}>
-                <View style={styles.amtBox}>
-                  <Text style={[styles.amtVal, { color: COLORS.success }]}>{formatInr(target.achieved_amount)}</Text>
-                  <Text style={styles.amtLabel}>Achieved</Text>
-                </View>
-                <View style={styles.amtDivider} />
-                <View style={styles.amtBox}>
-                  <Text style={[styles.amtVal, { color: COLORS.error }]}>{formatInr(target.shortfall_amount)}</Text>
-                  <Text style={styles.amtLabel}>Shortfall</Text>
-                </View>
-                {summary.daily_sales_count > 0 && (
-                  <>
-                    <View style={styles.amtDivider} />
-                    <View style={styles.amtBox}>
-                      <Text style={[styles.amtVal, { color: COLORS.blue }]}>{summary.daily_sales_count}</Text>
-                      <Text style={styles.amtLabel}>Orders</Text>
-                    </View>
-                  </>
-                )}
-              </View>
             </AppCard>
-
-            {/* Last month comparison */}
-            {lastMonth && lastMonth.target_amount > 0 && (
-              <AppCard style={styles.compareCard}>
-                <Text style={styles.compareTitle}>vs Last Month</Text>
-                <View style={styles.compareRow}>
+          ) : (
+            <>
+              {/* Main achievement card */}
+              <AppCard style={styles.mainCard}>
+                <View style={styles.mainTop}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.compareLabel}>Last Month Achievement</Text>
-                    <Text style={styles.compareVal}>{formatInr(lastMonth.achieved_amount)}</Text>
-                    <Text style={styles.compareSubVal}>{lastMonth.achievement_percentage}% of {formatInr(lastMonth.target_amount)}</Text>
+                    <Text style={styles.periodLabel}>{PERIODS.find((p) => p.key === periodKey)?.label ?? periodKey}</Text>
+                    <Text style={styles.mainTitle}>Monthly Sales Target</Text>
                   </View>
-                  <View style={styles.deltaBadge}>
-                    {lastMonth.difference_amount >= 0
-                      ? <TrendingUp size={14} color={COLORS.success} />
-                      : <TrendingDown size={14} color={COLORS.error} />}
-                    <Text style={[styles.deltaText, { color: lastMonth.difference_amount >= 0 ? COLORS.success : COLORS.error }]}>
-                      {lastMonth.difference_amount >= 0 ? '+' : ''}{formatInr(lastMonth.difference_amount)}
-                    </Text>
+                  <View style={[styles.riskBadge, { backgroundColor: color + '20' }]}>
+                    <Text style={[styles.riskText, { color }]}>{riskLabel(pct)}</Text>
                   </View>
                 </View>
-              </AppCard>
-            )}
 
-            {/* Admin remark if any */}
-            {summary?.target?.admin_remark ? (
-              <AppCard style={styles.remarkCard}>
-                <Text style={styles.remarkLabel}>Message from Manager / HO</Text>
-                <Text style={styles.remarkText}>{summary.target.admin_remark}</Text>
+                <View style={styles.pctRow}>
+                  <Text style={[styles.pctBig, { color }]}>{pct}%</Text>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={styles.targetAmt}>{formatInr(target.target_amount)}</Text>
+                    <Text style={styles.targetAmtLabel}>Target</Text>
+                  </View>
+                </View>
+
+                <ProgressBar value={Math.min(pct, 100)} height={10} color={color} showLabel />
+
+                <View style={styles.amtRow}>
+                  <View style={styles.amtBox}>
+                    <Text style={[styles.amtVal, { color: COLORS.success }]}>{formatInr(target.achieved_amount)}</Text>
+                    <Text style={styles.amtLabel}>Achieved</Text>
+                  </View>
+                  <View style={styles.amtDivider} />
+                  <View style={styles.amtBox}>
+                    <Text style={[styles.amtVal, { color: COLORS.error }]}>{formatInr(target.shortfall_amount)}</Text>
+                    <Text style={styles.amtLabel}>Shortfall</Text>
+                  </View>
+                  {summary.daily_sales_count > 0 && (
+                    <>
+                      <View style={styles.amtDivider} />
+                      <View style={styles.amtBox}>
+                        <Text style={[styles.amtVal, { color: COLORS.blue }]}>{summary.daily_sales_count}</Text>
+                        <Text style={styles.amtLabel}>Orders</Text>
+                      </View>
+                    </>
+                  )}
+                </View>
               </AppCard>
-            ) : null}
-          </>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+
+              {/* Last month comparison */}
+              {lastMonth && lastMonth.target_amount > 0 && (
+                <AppCard style={styles.compareCard}>
+                  <Text style={styles.compareTitle}>vs Last Month</Text>
+                  <View style={styles.compareRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.compareLabel}>Last Month Achievement</Text>
+                      <Text style={styles.compareVal}>{formatInr(lastMonth.achieved_amount)}</Text>
+                      <Text style={styles.compareSubVal}>{lastMonth.achievement_percentage}% of {formatInr(lastMonth.target_amount)}</Text>
+                    </View>
+                    <View style={styles.deltaBadge}>
+                      {lastMonth.difference_amount >= 0
+                        ? <TrendingUp size={14} color={COLORS.success} />
+                        : <TrendingDown size={14} color={COLORS.error} />}
+                      <Text style={[styles.deltaText, { color: lastMonth.difference_amount >= 0 ? COLORS.success : COLORS.error }]}>
+                        {lastMonth.difference_amount >= 0 ? '+' : ''}{formatInr(lastMonth.difference_amount)}
+                      </Text>
+                    </View>
+                  </View>
+                </AppCard>
+              )}
+
+              {/* Admin remark if any */}
+              {summary?.target?.admin_remark ? (
+                <AppCard style={styles.remarkCard}>
+                  <Text style={styles.remarkLabel}>Message from Manager / HO</Text>
+                  <Text style={styles.remarkText}>{summary.target.admin_remark}</Text>
+                </AppCard>
+              ) : null}
+            </>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </ScreenLayout>
+
   );
 }
 

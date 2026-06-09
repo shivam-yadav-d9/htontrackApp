@@ -11,12 +11,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const htLogo = require("../../../../assets/images/hometown-logo.png");
+const htLogo = require("../../../assets/images/hometown-logo.png");
 
 const C = {
   navy: "#102B45", orange: "#C95F18", gold: "#B7791F", beige: "#F6EBDC",
   cream: "#FFFDF8", muted: "#8A8178", brown: "#6B3F20", green: "#166534",
-  red: "#B91C1C", white: "#FFFFFF",
+  red: "#B91C1C", white: "#FFFFFF", amber: "#FCD34D",
 };
 
 type NoticeStatus = "Draft" | "Generated" | "Published" | "Archived";
@@ -47,9 +47,9 @@ type Notice = {
 function apiStatusToUI(status: string): NoticeStatus {
   switch ((status ?? "").toLowerCase()) {
     case "published": return "Published";
-    case "archived":  return "Archived";
+    case "archived": return "Archived";
     case "generated": return "Generated";
-    default:          return "Draft";
+    default: return "Draft";
   }
 }
 
@@ -81,10 +81,10 @@ function mapApiNotice(r: any): Notice {
 }
 
 const STATUS_COLORS: Record<NoticeStatus, { bg: string; text: string; border: string }> = {
-  Draft:     { bg: "#F8FAFC", text: "#475569", border: "#E2E8F0" },
+  Draft: { bg: "#F8FAFC", text: "#475569", border: "#E2E8F0" },
   Generated: { bg: "#EFF6FF", text: "#1D4ED8", border: "#BFDBFE" },
   Published: { bg: "#F0FDF4", text: "#166534", border: "#BBF7D0" },
-  Archived:  { bg: "#FFFBEB", text: "#B45309", border: "#FDE68A" },
+  Archived: { bg: "#FFFBEB", text: "#B45309", border: "#FDE68A" },
 };
 
 function NoticeCard({ notice, onPreview, onPublish, onArchive }: {
