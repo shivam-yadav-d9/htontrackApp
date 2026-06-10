@@ -13,6 +13,7 @@ import { Platform, StyleSheet, Text, View } from "react-native";
 
 import { COLORS, Spacing } from "@/constants/theme";
 import { useAuthStore } from "@/store/auth.store";
+import { useAutoAttendance } from "@/hooks/useAutoAttendance"; // ← NEW
 
 function TabIcon({
   focused,
@@ -28,7 +29,6 @@ function TabIcon({
       <View style={[styles.iconBubble, focused && styles.iconBubbleActive]}>
         {icon}
       </View>
-
       <Text style={[styles.tabLabel, focused && styles.tabLabelActive]} numberOfLines={1}>
         {label}
       </Text>
@@ -39,6 +39,8 @@ function TabIcon({
 export default function StaffLayout() {
   const { is_authenticated, user } = useAuthStore();
 
+  useAutoAttendance(); // ← NEW: starts background location watch immediately after login
+
   const activeColor = COLORS.orange;
   const inactiveColor = COLORS.gray;
 
@@ -47,7 +49,6 @@ export default function StaffLayout() {
       router.replace("/auth/login");
       return;
     }
-
     if (user && user.role.toUpperCase().includes("MANAGER")) {
       router.replace("/manager/dashboard");
     }
@@ -141,46 +142,6 @@ export default function StaffLayout() {
         }}
       />
 
-      {/* <Tabs.Screen
-        name="learning"
-        options={{
-          title: "Learning",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon
-              focused={focused}
-              label="Learn"
-              icon={
-                <BookOpenCheck
-                  size={20}
-                  color={focused ? activeColor : inactiveColor}
-                  strokeWidth={focused ? 2.7 : 2.2}
-                />
-              }
-            />
-          ),
-        }}
-      /> */}
-{/* 
-      <Tabs.Screen
-        name="work"
-        options={{
-          title: "Work",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon
-              focused={focused}
-              label="Work"
-              icon={
-                <BriefcaseBusiness
-                  size={20}
-                  color={focused ? activeColor : inactiveColor}
-                  strokeWidth={focused ? 2.7 : 2.2}
-                />
-              }
-            />
-          ),
-        }}
-      /> */}
-
       <Tabs.Screen
         name="profile"
         options={{
@@ -201,14 +162,10 @@ export default function StaffLayout() {
         }}
       />
 
-      {/* Hidden staff detail/action screens used by dashboard cards */}
-
-      {/* Attendance Center */}
+      {/* ── Hidden screens ── */}
       <Tabs.Screen name="leave-requests" options={{ href: null }} />
       <Tabs.Screen name="attendance-corrections" options={{ href: null }} />
       <Tabs.Screen name="attendance-correction" options={{ href: null }} />
-
-      {/* Learning Hub */}
       <Tabs.Screen name="courses" options={{ href: null }} />
       <Tabs.Screen name="course-detail" options={{ href: null }} />
       <Tabs.Screen name="course-reading" options={{ href: null }} />
@@ -223,8 +180,6 @@ export default function StaffLayout() {
       <Tabs.Screen name="learning-paths" options={{ href: null }} />
       <Tabs.Screen name="learning-path-detail" options={{ href: null }} />
       <Tabs.Screen name="coaching-plans" options={{ href: null }} />
-
-      {/* Daily Work */}
       <Tabs.Screen name="tasks" options={{ href: null }} />
       <Tabs.Screen name="task-detail" options={{ href: null }} />
       <Tabs.Screen name="tickets" options={{ href: null }} />
@@ -234,8 +189,6 @@ export default function StaffLayout() {
       <Tabs.Screen name="todos" options={{ href: null }} />
       <Tabs.Screen name="todo-create" options={{ href: null }} />
       <Tabs.Screen name="duties" options={{ href: null }} />
-
-      {/* Leaderboard & Growth */}
       <Tabs.Screen name="awards" options={{ href: null }} />
       <Tabs.Screen name="insights" options={{ href: null }} />
       <Tabs.Screen name="leaderboard" options={{ href: null }} />
@@ -245,19 +198,12 @@ export default function StaffLayout() {
       <Tabs.Screen name="performance-alerts" options={{ href: null }} />
       <Tabs.Screen name="rewards" options={{ href: null }} />
       <Tabs.Screen name="certificates" options={{ href: null }} />
-
-      {/* Updates & Alerts */}
       <Tabs.Screen name="announcements" options={{ href: null }} />
       <Tabs.Screen name="reminders" options={{ href: null }} />
       <Tabs.Screen name="notifications" options={{ href: null }} />
       <Tabs.Screen name="alerts" options={{ href: null }} />
-
-      {/* Profile Essentials */}
       <Tabs.Screen name="documents" options={{ href: null }} />
       <Tabs.Screen name="edit-profile" options={{ href: null }} />
-
-
-
       <Tabs.Screen name="settings" options={{ href: null }} />
       <Tabs.Screen name="about" options={{ href: null }} />
       <Tabs.Screen name="help" options={{ href: null }} />
@@ -280,18 +226,15 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 12,
   },
-
   tabIcon: {
     minWidth: 46,
     alignItems: "center",
     justifyContent: "center",
     gap: 2,
   },
-
   tabIconActive: {
     transform: [{ translateY: -1 }],
   },
-
   iconBubble: {
     width: 30,
     height: 28,
@@ -299,18 +242,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   iconBubbleActive: {
     backgroundColor: "#FFF3E8",
   },
-
   tabLabel: {
     fontSize: 8.5,
     color: COLORS.gray,
     fontWeight: "700",
     maxWidth: 52,
   },
-
   tabLabelActive: {
     color: COLORS.orange,
     fontWeight: "900",

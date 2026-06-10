@@ -1,4 +1,5 @@
 import { AdminBottomNav } from "@/components/admin/AdminBottomNav";
+import { useAuthStore } from "@/store/auth.store";
 import { router } from "expo-router";
 import {
   Award, BarChart3, ClipboardList, CreditCard, FileText,
@@ -73,13 +74,14 @@ const MODULES = [
 ];
 
 const QUICK_LINKS = [
-  { label: "Stores",    icon: Store,    route: "/admin/stores" },
-  { label: "Reports",   icon: ClipboardList, route: "/admin/reports" },
+  { label: "Stores", icon: Store, route: "/admin/stores" },
+  { label: "Reports", icon: ClipboardList, route: "/admin/reports" },
   { label: "AI Insights", icon: Sparkles, route: "/admin/insights" },
-  { label: "Settings",  icon: UserCog,  route: null },
+  { label: "Settings", icon: UserCog, route: null },
 ];
 
 export default function MoreScreen() {
+  const logout = useAuthStore((state) => state.logout);
   return (
     <SafeAreaView style={ss.safe} edges={["top"]}>
       <View style={ss.root}>
@@ -153,7 +155,15 @@ export default function MoreScreen() {
               onPress={() =>
                 Alert.alert("Sign Out", "Are you sure you want to sign out?", [
                   { text: "Cancel", style: "cancel" },
-                  { text: "Sign Out", style: "destructive", onPress: () => router.replace("/(auth)/login" as any) },
+
+                  {
+                    text: "Sign Out",
+                    style: "destructive",
+                    onPress: async () => {
+                      await logout();
+                      router.replace("/auth/login");
+                    },
+                  },
                 ])
               }
             >

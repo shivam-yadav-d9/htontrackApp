@@ -26,20 +26,32 @@ export default function RootLayout() {
   const { is_authenticated, is_loading, user, restoreSession } = useAuthStore();
 
   useEffect(() => {
-    seedLocalDb().catch(() => {});
+    seedLocalDb().catch(() => { });
     restoreSession();
   }, [restoreSession]);
 
   useEffect(() => {
+    console.log('AUTH STATE', {
+      is_loading,
+      is_authenticated,
+      user,
+    });
+
     if (!is_loading) {
       if (is_authenticated && user) {
+        console.log('GOING TO DASHBOARD');
+
         const role = String(user.role).toUpperCase();
         const targetRoute =
-          role === 'ADMIN' ? '/admin/dashboard' :
-          role === 'MANAGER' ? '/manager/dashboard' :
-          '/staff/dashboard';
+          role === 'ADMIN'
+            ? '/admin/dashboard'
+            : role === 'MANAGER'
+              ? '/manager/dashboard'
+              : '/staff/dashboard';
+
         router.replace(targetRoute);
-      } else if (!is_authenticated) {
+      } else {
+        console.log('GOING TO LOGIN');
         router.replace('/auth/login');
       }
     }

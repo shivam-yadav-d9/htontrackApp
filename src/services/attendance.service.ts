@@ -390,9 +390,13 @@ export const attendanceService = {
   async getMyAttendance() {
     const user = useAuthStore.getState().user;
 
+    console.log("ATTENDANCE LIST API CALLED", user?.id);
+
     const records = await api.get(
       `/ontrack/attendance/${user?.id}`
     );
+
+    console.log("ATTENDANCE RECORDS", records);
 
     return {
       active_session:

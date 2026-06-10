@@ -1,9 +1,11 @@
+import { Tabs, router } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ScreenLayout from "@/components/ScreenLayout";
 
 import {
   ActivityIndicator,
   Alert,
+  DeviceEventEmitter,
   FlatList,
   ScrollView,
   StyleSheet,
@@ -12,8 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import type { LocationSubscription } from 'expo-location';
 
 import { attendanceService, attendanceAnalyticsService, attendanceControlService } from '@/services/attendance.service';
 import { weeklyOffService } from '@/services/weeklyOff.service';
@@ -27,7 +27,7 @@ import type {
   MyAttendanceResponse,
   StaffMonthWiseResponse,
 } from '@/services/attendance.service';
-import { getCurrentLocation, watchLocation } from '@/utils/location';
+import { getCurrentLocation } from '@/utils/location'; // watchLocation no longer needed here
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -43,24 +43,11 @@ function formatDateTime(value?: string | null): string {
 
 function formatDuration(minutes?: number | null): string {
   if (!minutes || minutes <= 0) return "0 min";
-
   const hrs = Math.floor(minutes / 60);
   const mins = minutes % 60;
-
-  if (hrs > 0 && mins > 0) {
-    return `${hrs} hr ${mins} min`;
-  }
-
-  if (hrs > 0) {
-    return `${hrs} hr`;
-  }
-
+  if (hrs > 0 && mins > 0) return `${hrs} hr ${mins} min`;
+  if (hrs > 0) return `${hrs} hr`;
   return `${mins} min`;
-}
-
-function formatHours(value?: number | null): string {
-  if (value === null || value === undefined) return '—';
-  return `${value.toFixed(2)} hrs`;
 }
 
 const MONTH_NAMES = [
@@ -79,6 +66,8 @@ function StatusBadge({ status }: { status?: string | null }) {
     weekly_off: { bg: '#DBEAFE', text: '#1D4ED8', label: 'Weekly Off' },
     leave: { bg: '#EDE9FE', text: '#7C3AED', label: 'Leave' },
     upcoming: { bg: '#F3F4F6', text: '#6B7280', label: 'Upcoming' },
+    OPEN: { bg: '#DCFCE7', text: '#15803D', label: 'Checked In' },
+    CLOSED: { bg: '#FEF9C3', text: '#92400E', label: 'Checked Out' },
   };
   const cfg = configs[status ?? ''] ?? { bg: '#F3F4F6', text: '#6B7280', label: status ?? '—' };
   return (
@@ -114,16 +103,6 @@ export default function StaffAttendanceScreen() {
   const [attendance, setAttendance] = useState<MyAttendanceResponse | null>(null);
   const [daySummary, setDaySummary] = useState<any>(null);
   const [graph, setGraph] = useState<StaffMonthWiseResponse | null>(null);
-  const [lastGeofence, setLastGeofence] = useState<{
-    geofence_status: string;
-    distance_meters: number;
-    is_inside_geofence: boolean;
-  } | null>(null);
-
-
-  const locationSub = useRef<LocationSubscription | null>(null);
-  const lastAutoActionRef = useRef<string | null>(null);
-  const isCheckedInRef = useRef(false);
 
   // Correction form
   const [correctionType, setCorrectionType] = useState('');
@@ -149,11 +128,30 @@ export default function StaffAttendanceScreen() {
   const [woffChangeReason, setWoffChangeReason] = useState('');
   const [woffSubmitting, setWoffSubmitting] = useState(false);
 
+  // ── Load on mount ──────────────────────────────────────────────────────────
+  // ── Load on mount ──────────────────────────────────────────────────────────
   useEffect(() => {
     loadAttendance();
-    startLocationWatch();
-    return () => { locationSub.current?.remove(); };
   }, []);
+
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(
+      'ATTENDANCE_UPDATED',
+      () => {
+        console.log('[AttendanceScreen] ATTENDANCE_UPDATED');
+        loadAttendance();
+      }
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (tab === 'monthwise') loadGraph();
+    if (tab === 'requests') loadRequests();
+  }, [tab, year, month]);
 
   useEffect(() => {
     if (tab === 'monthwise') loadGraph();
@@ -200,97 +198,6 @@ export default function StaffAttendanceScreen() {
     } finally { setGraphLoading(false); }
   }
 
-  function getDistanceInMeters(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ) {
-    const R = 6371000;
-
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  async function startLocationWatch() {
-    try {
-      const STORE_LAT = 19.136851;
-      const STORE_LNG = 72.862235;
-
-      locationSub.current = await watchLocation(async (loc) => {
-        const distance = getDistanceInMeters(
-          loc.latitude,
-          loc.longitude,
-          STORE_LAT,
-          STORE_LNG
-        );
-
-        console.log("DISTANCE =", distance);
-        setLastGeofence({
-          geofence_status: distance <= 100 ? "INSIDE" : "OUTSIDE",
-          distance_meters: distance,
-          is_inside_geofence: distance <= 100,
-        });
-
-        // Auto Check-In
-        if (!isCheckedInRef.current && distance <= 100) {
-          console.log("AUTO CHECK-IN");
-
-          try {
-            await attendanceService.checkIn({
-              latitude: loc.latitude,
-              longitude: loc.longitude,
-            });
-
-            isCheckedInRef.current = true;
-
-            await loadAttendance();
-          } catch (error) {
-            console.log("AUTO CHECK-IN ERROR", error);
-          }
-
-          return;
-        }
-
-        // Auto Check-Out
-        if (isCheckedInRef.current && distance > 150) {
-          console.log("AUTO CHECK-OUT");
-
-          try {
-            await attendanceService.checkOut({
-              latitude: loc.latitude,
-              longitude: loc.longitude,
-            });
-
-            isCheckedInRef.current = false;
-
-            await loadAttendance();
-          } catch (error) {
-            console.log("AUTO CHECK-OUT ERROR", error);
-          }
-
-          return;
-        }
-      });
-    } catch (err) {
-      Alert.alert(
-        "Location",
-        err instanceof Error
-          ? err.message
-          : "Location permission required."
-      );
-    }
-  }
-
   // ── Actions ─────────────────────────────────────────────────────────────────
 
   function getTodayDate(): string { return new Date().toISOString().slice(0, 10); }
@@ -298,12 +205,14 @@ export default function StaffAttendanceScreen() {
   async function handleCheckIn() {
     try {
       setLoading(true);
-      lastAutoActionRef.current = null;
       const loc = await getCurrentLocation();
-      const res = await attendanceService.checkIn({ latitude: loc.latitude, longitude: loc.longitude, accuracy: loc.accuracy, remarks: remarks || undefined });
+      await attendanceService.checkIn({
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+      });
       Alert.alert('Success', 'Checked In Successfully');
       setRemarks('');
-      await loadAttendance();
+      setTimeout(() => { loadAttendance(); }, 1500);
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
       Alert.alert('Check-in Failed', typeof detail === 'object' && detail?.message ? detail.message : err instanceof Error ? err.message : 'Unable to check in.');
@@ -313,12 +222,14 @@ export default function StaffAttendanceScreen() {
   async function handleCheckOut() {
     try {
       setLoading(true);
-      lastAutoActionRef.current = null;
       const loc = await getCurrentLocation();
-      const res = await attendanceService.checkOut({ latitude: loc.latitude, longitude: loc.longitude, accuracy: loc.accuracy, remarks: remarks || undefined });
+      await attendanceService.checkOut({
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+      });
       Alert.alert('Success', 'Checked Out Successfully');
       setRemarks('');
-      await loadAttendance();
+      setTimeout(() => { loadAttendance(); }, 1500);
     } catch (err) {
       Alert.alert('Check-out Failed', err instanceof Error ? err.message : 'Unable to check out.');
     } finally { setLoading(false); }
@@ -368,7 +279,9 @@ export default function StaffAttendanceScreen() {
     setWoffSubmitting(true);
     try {
       await weeklyOffService.createChangeRequest({
-        current_off_date: woffChangeFrom.trim(), requested_off_date: woffChangeTo.trim(), reason: woffChangeReason.trim(),
+        current_off_date: woffChangeFrom.trim(),
+        requested_off_date: woffChangeTo.trim(),
+        reason: woffChangeReason.trim(),
       });
       Alert.alert('Submitted', 'Weekly-off change request submitted.');
       setWoffChangeFrom(''); setWoffChangeTo(''); setWoffChangeReason('');
@@ -388,11 +301,7 @@ export default function StaffAttendanceScreen() {
   }
 
   const activeSession = attendance?.active_session ?? null;
-  useEffect(() => {
-    isCheckedInRef.current = !!activeSession;
-  }, [activeSession]);
   const today = new Date().toISOString().split("T")[0];
-
   const sessions: AttendanceSession[] =
     (attendance?.sessions ?? []).filter(
       (item) => item.attendanceDate === today
@@ -404,67 +313,37 @@ export default function StaffAttendanceScreen() {
 
   return (
     <ScreenLayout title="Attendance">
-
       <View style={styles.root}>
 
-        {/* ── OLD-STYLE HEADER ─────────────────────────────────────────────────── */}
+        {/* ── HEADER ───────────────────────────────────────────────────────── */}
         <View style={styles.header}>
           <Text style={styles.headerTag}>ATTENDANCE HUB</Text>
           <Text style={styles.headerTitle}>My Dashboard</Text>
           <Text style={styles.headerSubtitle}>Track attendance and office status.</Text>
         </View>
 
-        {/* ── STATUS + DISTANCE CARDS (float over header) ───────────────────── */}
+        {/* ── STATUS CARDS ─────────────────────────────────────────────────── */}
         <View style={styles.floatingRow}>
-          {/* Status card */}
           <View style={[styles.floatCard, { flex: 1.2 }]}>
             <Text style={styles.floatLabel}>Status</Text>
-            {lastGeofence ? (
-              <Text style={[styles.floatValue, { color: lastGeofence.is_inside_geofence ? '#10B981' : '#EF4444', fontSize: 18 }]}>
-                {lastGeofence.is_inside_geofence ? '● Active' : '● Outside'}
-              </Text>
-            ) : (
-              <Text style={[styles.floatValue, { color: isCheckedIn ? '#10B981' : '#EF4444', fontSize: 18 }]}>
-                {isCheckedIn ? '● Active' : '● Not In'}
-              </Text>
-            )}
-          </View>
-
-          {/* Distance card */}
-          <View style={[styles.floatCard, { flex: 1 }]}>
-            <Text style={styles.floatLabel}>Distance</Text>
-
-            <Text
-              style={[
-                styles.floatValue,
-                {
-                  fontSize: 18,
-                  color:
-                    lastGeofence?.is_inside_geofence
-                      ? '#10B981'
-                      : '#EF4444',
-                },
-              ]}
-            >
-              {lastGeofence
-                ? lastGeofence.distance_meters >= 1000
-                  ? `${(lastGeofence.distance_meters / 1000).toFixed(2)} km`
-                  : `${Math.round(lastGeofence.distance_meters)} m`
-                : '--'}
+            <Text style={[styles.floatValue, { color: isCheckedIn ? '#10B981' : '#EF4444', fontSize: 18 }]}>
+              {isCheckedIn ? '● Active' : '● Not In'}
             </Text>
           </View>
 
+          <View style={[styles.floatCard, { flex: 1 }]}>
+            <Text style={styles.floatLabel}>Today</Text>
+            <Text style={[styles.floatValue, { fontSize: 14, color: '#0B2D52' }]}>
+              {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+            </Text>
+          </View>
 
-          {/* Apply Leave quick button */}
-          <TouchableOpacity
-            style={styles.leaveButton}
-            onPress={() => setTab('requests')}
-          >
+          <TouchableOpacity style={styles.leaveButton} onPress={() => setTab('requests')}>
             <Text style={styles.leaveText}>Apply{'\n'}Leave</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ── TAB BAR ──────────────────────────────────────────────────────────── */}
+        {/* ── TAB BAR ──────────────────────────────────────────────────────── */}
         <View style={styles.tabBar}>
           {([
             { key: 'checkin', label: 'Check-In/Out' },
@@ -483,7 +362,7 @@ export default function StaffAttendanceScreen() {
           ))}
         </View>
 
-        {/* ── TAB CONTENT ──────────────────────────────────────────────────────── */}
+        {/* ── TAB CONTENT ──────────────────────────────────────────────────── */}
 
         {tab === 'checkin' ? (
           <FlatList
@@ -492,108 +371,28 @@ export default function StaffAttendanceScreen() {
             contentContainerStyle={styles.tabContent}
             ListHeaderComponent={
               <>
-                {/* Today's status card */}
-                <View style={styles.card}>
-                  <Text style={styles.cardSectionTitle}>Today's Status</Text>
-                  {activeSession ? (
-                    <>
-                      <StatusBadge status={activeSession.status} />
-                      <Text style={styles.cardBodyText}>
-                        {activeSession.session_label ?? 'Active session'} : Check-in: {formatDateTime(activeSession.check_in_time)}
-                      </Text>
+                {/* Manual Check-In / Check-Out Buttons */}
 
-                    </>
-                  ) : (
-                    <Text style={{ color: '#9A3412', fontWeight: '700', marginBottom: 4 }}>Not checked in</Text>
-                  )}
-
-                  {daySummary && daySummary.total_sessions > 0 && (
-                    <View style={styles.summaryBlock}>
-                      <Text style={styles.summaryTitle}>Today's Summary</Text>
-                      <View style={{ flexDirection: 'row', gap: 16 }}>
-                        <Text style={styles.summaryText}>Sessions: <Text style={{ fontWeight: '700' }}>{daySummary.total_sessions}</Text></Text>
-                        <Text style={styles.summaryText}>Completed: <Text style={{ fontWeight: '700' }}>{daySummary.completed_sessions}</Text></Text>
-                      </View>
-                      <Text style={styles.summaryText}>Total Hours: <Text style={{ fontWeight: '700' }}>{(daySummary.total_hours ?? 0).toFixed(2)} hrs</Text></Text>
-                      {daySummary.first_check_in && (
-                        <Text style={styles.summaryText}>First In: <Text style={{ fontWeight: '700' }}>{formatDateTime(daySummary.first_check_in)}</Text></Text>
-                      )}
-                      {daySummary.last_check_out && (
-                        <Text style={styles.summaryText}>Last Out: <Text style={{ fontWeight: '700' }}>{formatDateTime(daySummary.last_check_out)}</Text></Text>
-                      )}
-                    </View>
-                  )}
-                  {/* 
-                  <TextInput
-                    value={remarks}
-                    onChangeText={setRemarks}
-                    placeholder="Remarks (optional)"
-                    style={styles.input}
-                  /> */}
-
-                  <View style={{ flexDirection: 'row', gap: 12, marginTop: 14 }}>
-                    <TouchableOpacity
-                      onPress={handleCheckIn}
-                      disabled={loading || isCheckedIn}
-                      style={[styles.actionButton, { backgroundColor: isCheckedIn ? '#D6D3D1' : '#F59E0B' }]}
-                    >
-                      {loading
-                        ? <ActivityIndicator color="#fff" />
-                        : <Text style={styles.actionButtonText}>Check In</Text>}
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={handleCheckOut}
-                      disabled={loading || !isCheckedIn}
-                      style={[styles.actionButton, { backgroundColor: !isCheckedIn ? '#D6D3D1' : '#0B2D52' }]}
-                    >
-                      <Text style={styles.actionButtonText}>Check Out</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <Text style={styles.sectionTitle}>Recent Attendance</Text>
+                <Text style={styles.sectionTitle}>Today's Sessions</Text>
               </>
             }
             renderItem={({ item }) => (
               <View style={styles.attendanceCard}>
                 <View>
-
-                  <Text style={styles.attendanceDate}>
-                    {item.attendanceDate}
-                  </Text>
-
-                  <Text style={styles.attendanceTime}>
-                    Check In: {formatDateTime(item.checkIn)}
-                  </Text>
-
-                  <Text style={styles.attendanceTime}>
-                    Check Out: {formatDateTime(item.checkOut)}
-                  </Text>
-
-                  <Text style={styles.attendanceTime}>
-                    Duration: {formatDuration(item.durationMinutes)}
-                  </Text>
-
-                  <Text style={styles.attendanceTime}>
-                    Check-In Type: {item.checkInType}
-                  </Text>
-
-                  <Text style={styles.attendanceTime}>
-                    Check-Out Type: {item.checkOutType}
-                  </Text>
-
-                  <Text style={styles.attendanceTime}>
-                    Status: {item.status}
-                  </Text>
-
-                  {item.auto_checkin && <Text style={styles.autoTag}>Auto check-in by geofence</Text>}
-                  {item.auto_checkout && <Text style={[styles.autoTag, { color: '#B45309' }]}>Auto checkout by geofence</Text>}
+                  <Text style={styles.attendanceDate}>{item.attendanceDate}</Text>
+                  <Text style={styles.attendanceTime}>Check In: {formatDateTime(item.checkIn)}</Text>
+                  <Text style={styles.attendanceTime}>Check Out: {formatDateTime(item.checkOut)}</Text>
+                  <Text style={styles.attendanceTime}>Duration: {formatDuration(item.durationMinutes)}</Text>
+                  <Text style={styles.attendanceTime}>Check-In Type: {item.checkInType}</Text>
+                  <Text style={styles.attendanceTime}>Check-Out Type: {item.checkOutType}</Text>
+                  {item.auto_checkin && <Text style={styles.autoTag}>● Auto check-in</Text>}
+                  {item.auto_checkout && <Text style={[styles.autoTag, { color: '#B45309' }]}>● Auto checkout</Text>}
                 </View>
                 <StatusBadge status={item.status} />
               </View>
             )}
             ListEmptyComponent={
-              <Text style={{ color: '#6B7280', marginTop: 8 }}>No attendance sessions yet.</Text>
+              <Text style={{ color: '#6B7280', marginTop: 8 }}>No attendance sessions today.</Text>
             }
           />
 
@@ -752,7 +551,7 @@ export default function StaffAttendanceScreen() {
           </ScrollView>
 
         ) : (
-          /* ── Month-wise tab ──────────────────────────────────────────────────── */
+          /* ── Month-wise tab ─────────────────────────────────────────────── */
           <ScrollView contentContainerStyle={styles.tabContent}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <TouchableOpacity onPress={prevMonth} style={styles.monthNavBtn}>
@@ -789,7 +588,6 @@ export default function StaffAttendanceScreen() {
         )}
       </View>
     </ScreenLayout>
-
   );
 }
 
@@ -798,7 +596,6 @@ export default function StaffAttendanceScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F5F7FA' },
 
-  // ── Old-style header ──
   header: {
     backgroundColor: '#0B2D52',
     paddingTop: 60,
@@ -811,7 +608,6 @@ const styles = StyleSheet.create({
   headerTitle: { color: '#fff', fontSize: 36, fontWeight: 'bold', marginTop: 8 },
   headerSubtitle: { color: '#D1D5DB', fontSize: 15, marginTop: 8 },
 
-  // ── Floating cards row (overlaps header) ──
   floatingRow: {
     flexDirection: 'row',
     marginHorizontal: 20,
@@ -840,7 +636,6 @@ const styles = StyleSheet.create({
   },
   leaveText: { color: '#fff', fontWeight: 'bold', fontSize: 13, textAlign: 'center' },
 
-  // ── Tab bar ──
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#fff',
@@ -850,17 +645,13 @@ const styles = StyleSheet.create({
     padding: 4,
     elevation: 2,
   },
-  tabItem: {
-    flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 12,
-  },
+  tabItem: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 12 },
   tabItemActive: { backgroundColor: '#0B2D52' },
   tabLabel: { fontWeight: '800', color: '#9CA3AF', fontSize: 11 },
   tabLabelActive: { color: '#fff' },
 
-  // ── Tab content ──
   tabContent: { padding: 20, paddingBottom: 40 },
 
-  // ── Cards ──
   card: {
     backgroundColor: '#fff',
     borderRadius: 20,
@@ -868,12 +659,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     elevation: 3,
   },
-  cardSectionTitle: { fontSize: 16, fontWeight: '800', color: '#111827', marginBottom: 10 },
-  cardBodyText: { color: '#374151', marginTop: 4, fontSize: 13 },
-
-  summaryBlock: { marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#F0EDE8', gap: 3 },
-  summaryTitle: { fontSize: 12, fontWeight: '700', color: '#6B7280', marginBottom: 2 },
-  summaryText: { fontSize: 12, color: '#374151' },
 
   input: {
     borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12,
@@ -881,12 +666,9 @@ const styles = StyleSheet.create({
     fontSize: 13, marginBottom: 10,
   },
 
-  actionButton: {
-    flex: 1, padding: 14, borderRadius: 14, alignItems: 'center',
-  },
+  actionButton: { flex: 1, padding: 14, borderRadius: 14, alignItems: 'center' },
   actionButtonText: { color: '#fff', fontWeight: '900', fontSize: 15 },
 
-  // ── Attendance history card ──
   attendanceCard: {
     backgroundColor: '#fff',
     borderRadius: 18,
@@ -901,7 +683,6 @@ const styles = StyleSheet.create({
   attendanceTime: { color: '#6B7280', marginTop: 2, fontSize: 13 },
   autoTag: { color: '#15803D', fontWeight: '700', fontSize: 12, marginTop: 4 },
 
-  // ── Section titles ──
   sectionTitle: {
     fontSize: 22, fontWeight: 'bold', color: '#111827',
     marginBottom: 14, marginTop: 4,
@@ -911,7 +692,6 @@ const styles = StyleSheet.create({
     marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5,
   },
 
-  // ── Request cards ──
   submitButton: { borderRadius: 12, padding: 13, alignItems: 'center', marginTop: 2 },
   submitButtonText: { color: '#fff', fontWeight: '800', fontSize: 14 },
   requestCard: {
@@ -921,7 +701,6 @@ const styles = StyleSheet.create({
   requestCardBody: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   requestCardMeta: { fontSize: 11, color: '#9CA3AF', marginTop: 3 },
 
-  // ── Month navigator ──
   monthNavBtn: { padding: 10, borderRadius: 10, backgroundColor: '#fff' },
   monthNavText: { fontSize: 18, color: '#0B2D52', fontWeight: '900' },
   monthNavLabel: { fontSize: 18, fontWeight: '900', color: '#0B2D52' },

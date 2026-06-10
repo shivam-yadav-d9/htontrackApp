@@ -1,17 +1,14 @@
 import { router } from "expo-router";
 import {
   ArrowRight,
-  BriefcaseBusiness,
   Eye,
   EyeOff,
   Lock,
   Mail,
   ShieldCheck,
-  ShieldAlert,
   Sparkles,
-  UserRound,
 } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -33,66 +30,14 @@ import type { User } from "@/types/auth.types";
 
 import hometownLogo from "../../assets/images/react-logo-removebg-preview.png";
 
-type LoginPortal = "staff" | "manager" | "admin";
-
 export default function LoginScreen() {
   const { login } = useAuthStore();
 
-  const [portal, setPortal] = useState<LoginPortal>("staff");
-  const [email, setEmail] = useState("staff@hometown.com");
-  const [password, setPassword] = useState("staff@123");
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-
-  const isManager = portal === "manager";
-  const isAdmin = portal === "admin";
-
-  const pageContent = useMemo(() => {
-    if (isAdmin) {
-      return {
-        title: "Admin Login",
-        subtitle: "Full system access — stores, users, reports and analytics.",
-        helper: "Use your Head Office admin credentials.",
-        button: "Open Admin Dashboard",
-        eyebrow: "HEAD OFFICE COMMAND",
-      };
-    }
-    if (isManager) {
-      return {
-        title: "Manager Login",
-        subtitle: "Manage approvals, staff, targets and store operations.",
-        helper: "Use your assigned HomeTown manager account.",
-        button: "Open Manager Dashboard",
-        eyebrow: "MANAGER COMMAND",
-      };
-    }
-    return {
-      title: "Staff Login",
-      subtitle: "Access attendance, learning, assignments and targets.",
-      helper: "Use your assigned HomeTown staff account.",
-      button: "Open Staff Dashboard",
-      eyebrow: "TEAM PORTAL",
-    };
-  }, [isManager, isAdmin]);
-
-  function switchPortal(nextPortal: LoginPortal) {
-    setPortal(nextPortal);
-    setError("");
-    setShowPassword(false);
-
-    if (nextPortal === "admin") {
-      setEmail("admin@hometown.in");
-      setPassword("admin@123");
-    } else if (nextPortal === "manager") {
-      setEmail("manager@hometown.com");
-      setPassword("manager@123");
-    } else {
-      setEmail("staff@hometown.com");
-      setPassword("staff@123");
-    }
-  }
 
   async function openHomeTownSite() {
     try {
@@ -126,51 +71,28 @@ export default function LoginScreen() {
       });
 
       const role = String(result.user.role).toUpperCase() as User["role"];
-      const isAdminRole = role === "ADMIN";
-      const isManagerRole = role === "MANAGER";
-      const isStaffRole = role === "STAFF";
-
-      if (isAdmin && !isAdminRole) {
-        setError("This account does not have admin access. Please use the correct portal.");
-        return;
-      }
-
-      if (isAdminRole && !isAdmin) {
-        setError("Admin accounts must use the Admin portal.");
-        return;
-      }
-
-      if (isAdminRole) {
-        const normalizedUser: User = {
-          ...result.user,
-          full_name: result.user.full_name || "HomeTown Admin",
-          role,
-        };
-        await login(normalizedUser, result.access_token, result.refresh_token);
-        router.replace("/admin/dashboard");
-        return;
-      }
-
-      if (isManager && !isManagerRole) {
-        setError("This account is not a manager account. Please use Staff Login.");
-        return;
-      }
-
-      if (!isManager && !isStaffRole) {
-        setError("This account is not a staff account. Please use Manager Login.");
-        return;
-      }
 
       const normalizedUser: User = {
         ...result.user,
         full_name:
-          result.user.full_name || (isManagerRole ? "Rohan Malhotra" : "Priya Sharma"),
+          result.user.full_name ||
+          (role === "ADMIN"
+            ? "HomeTown Admin"
+            : role === "MANAGER"
+            ? "Rohan Malhotra"
+            : "Priya Sharma"),
         role,
       };
 
       await login(normalizedUser, result.access_token, result.refresh_token);
 
-      router.replace(isManagerRole ? "/manager/dashboard" : "/staff/dashboard");
+      if (role === "ADMIN") {
+        router.replace("/admin/dashboard");
+      } else if (role === "MANAGER") {
+        router.replace("/manager/dashboard");
+      } else {
+        router.replace("/staff/dashboard");
+      }
     } catch (err) {
       const msg =
         err instanceof Error
@@ -198,11 +120,16 @@ export default function LoginScreen() {
             <View style={styles.bgOrbTwo} />
             <View style={styles.goldBeam} />
 
+            {/* ── Header ── */}
             <View style={styles.appHeader}>
               <View style={styles.logoGlowWrap}>
                 <View style={styles.logoGlowOne} />
                 <View style={styles.logoGlowTwo} />
-                <Image source={hometownLogo} style={styles.logoImage} resizeMode="contain" />
+                <Image
+                  source={hometownLogo}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
               </View>
 
               <View style={styles.brandLine}>
@@ -213,112 +140,21 @@ export default function LoginScreen() {
 
               <View style={styles.luxuryPill}>
                 <Sparkles size={12} color={COLORS.goldLight} />
-                <Text style={styles.luxuryPillText}>Smart Retail Workforce Platform</Text>
+                <Text style={styles.luxuryPillText}>
+                  Smart Retail Workforce Platform
+                </Text>
               </View>
             </View>
 
+            {/* ── Card ── */}
             <View style={styles.loginCard}>
-              <View style={styles.cardTitleRow}>
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={[
-                      styles.cardEyebrow,
-                      isManager && styles.cardEyebrowManager,
-                      isAdmin && styles.cardEyebrowAdmin,
-                    ]}
-                  >
-                    {pageContent.eyebrow}
-                  </Text>
-                  <Text style={styles.cardTitle}>{pageContent.title}</Text>
-                  <Text style={styles.cardSubtitle}>{pageContent.subtitle}</Text>
-                </View>
-
-                <View
-                  style={[
-                    styles.cardIconBadge,
-                    isAdmin
-                      ? styles.adminCardIconBadge
-                      : isManager
-                      ? styles.managerCardIconBadge
-                      : styles.staffCardIconBadge,
-                  ]}
-                >
-                  {isAdmin ? (
-                    <ShieldAlert size={20} color={COLORS.gold} />
-                  ) : isManager ? (
-                    <BriefcaseBusiness size={20} color={COLORS.blue} />
-                  ) : (
-                    <UserRound size={20} color={COLORS.orange} />
-                  )}
-                </View>
-              </View>
-
-              <View style={styles.portalSwitch}>
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  style={[
-                    styles.portalButton,
-                    portal === "staff" && styles.staffPortalButtonActive,
-                  ]}
-                  onPress={() => switchPortal("staff")}
-                >
-                  <UserRound
-                    size={16}
-                    color={portal === "staff" ? COLORS.white : COLORS.orange}
-                  />
-                  <Text
-                    style={[
-                      styles.portalButtonText,
-                      portal === "staff" && styles.portalButtonTextActive,
-                    ]}
-                  >
-                    Staff
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  style={[
-                    styles.portalButton,
-                    portal === "manager" && styles.managerPortalButtonActive,
-                  ]}
-                  onPress={() => switchPortal("manager")}
-                >
-                  <BriefcaseBusiness
-                    size={16}
-                    color={portal === "manager" ? COLORS.white : COLORS.blue}
-                  />
-                  <Text
-                    style={[
-                      styles.portalButtonText,
-                      portal === "manager" && styles.portalButtonTextActive,
-                    ]}
-                  >
-                    Manager
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  style={[
-                    styles.portalButton,
-                    portal === "admin" && styles.adminPortalButtonActive,
-                  ]}
-                  onPress={() => switchPortal("admin")}
-                >
-                  <ShieldAlert
-                    size={16}
-                    color={portal === "admin" ? COLORS.white : COLORS.gold}
-                  />
-                  <Text
-                    style={[
-                      styles.portalButtonText,
-                      portal === "admin" && styles.portalButtonTextActive,
-                    ]}
-                  >
-                    Admin
-                  </Text>
-                </TouchableOpacity>
+              <View style={styles.cardTitleBlock}>
+                <Text style={styles.cardEyebrow}>WELCOME BACK</Text>
+                <Text style={styles.cardTitle}>Sign In</Text>
+                <Text style={styles.cardSubtitle}>
+                  Enter your credentials — we'll take you straight to your
+                  dashboard.
+                </Text>
               </View>
 
               {error ? (
@@ -327,23 +163,18 @@ export default function LoginScreen() {
                 </View>
               ) : null}
 
+              {/* Email */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.fieldLabel}>Email Address</Text>
-                <View
-                  style={[
-                    styles.inputWrapper,
-                    isManager && styles.inputWrapperManager,
-                    isAdmin && styles.inputWrapperAdmin,
-                  ]}
-                >
+                <View style={styles.inputWrapper}>
                   <Mail
                     size={16}
-                    color={isAdmin ? COLORS.gold : isManager ? COLORS.blue : COLORS.orange}
+                    color={COLORS.orange}
                     style={styles.inputIcon}
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder={isAdmin ? "admin@hometown.com" : isManager ? "manager@hometown.com" : "staff@hometown.com"}
+                    placeholder="your@hometown.com"
                     placeholderTextColor={COLORS.gray}
                     keyboardType="email-address"
                     autoCapitalize="none"
@@ -354,18 +185,13 @@ export default function LoginScreen() {
                 </View>
               </View>
 
+              {/* Password */}
               <View style={styles.fieldBlock}>
                 <Text style={styles.fieldLabel}>Password</Text>
-                <View
-                  style={[
-                    styles.inputWrapper,
-                    isManager && styles.inputWrapperManager,
-                    isAdmin && styles.inputWrapperAdmin,
-                  ]}
-                >
+                <View style={styles.inputWrapper}>
                   <Lock
                     size={16}
-                    color={isAdmin ? COLORS.gold : isManager ? COLORS.blue : COLORS.orange}
+                    color={COLORS.orange}
                     style={styles.inputIcon}
                   />
                   <TextInput
@@ -378,7 +204,6 @@ export default function LoginScreen() {
                     value={password}
                     onChangeText={setPassword}
                   />
-
                   <TouchableOpacity
                     style={styles.eyeButton}
                     onPress={() => setShowPassword((prev) => !prev)}
@@ -393,12 +218,9 @@ export default function LoginScreen() {
                 </View>
               </View>
 
+              {/* Submit */}
               <TouchableOpacity
-                style={[
-                  styles.signInButton,
-                  isAdmin ? styles.adminSignInButton : isManager ? styles.managerSignInButton : styles.staffSignInButton,
-                  loading && styles.btnDisabled,
-                ]}
+                style={[styles.signInButton, loading && styles.btnDisabled]}
                 onPress={handleEmailLogin}
                 disabled={loading}
                 activeOpacity={0.9}
@@ -407,15 +229,18 @@ export default function LoginScreen() {
                   <ActivityIndicator color={COLORS.white} />
                 ) : (
                   <>
-                    <Text style={styles.signInText}>{pageContent.button}</Text>
+                    <Text style={styles.signInText}>Sign In to HomeTown</Text>
                     <ArrowRight size={18} color={COLORS.white} />
                   </>
                 )}
               </TouchableOpacity>
 
-              <Text style={styles.hint}>{pageContent.helper}</Text>
+              <Text style={styles.hint}>
+                You'll be redirected automatically based on your account role.
+              </Text>
             </View>
 
+            {/* ── Footer ── */}
             <View style={styles.footer}>
               <View style={styles.footerBrandRow}>
                 <Text style={styles.footerHome}>Home</Text>
@@ -447,7 +272,7 @@ export default function LoginScreen() {
               </View>
 
               <Text style={styles.footerQuote}>
-                “Empowering every store team to learn, perform and grow.”
+                "Empowering every store team to learn, perform and grow."
               </Text>
             </View>
           </View>
@@ -487,15 +312,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.brownDark,
   },
-
   kav: {
     flex: 1,
   },
-
   scroll: {
     flexGrow: 1,
   },
-
   screen: {
     flexGrow: 1,
     backgroundColor: COLORS.brown,
@@ -516,7 +338,6 @@ const styles = StyleSheet.create({
     top: -96,
     right: -86,
   },
-
   bgOrbTwo: {
     position: "absolute",
     width: 174,
@@ -526,7 +347,6 @@ const styles = StyleSheet.create({
     bottom: 48,
     left: -70,
   },
-
   goldBeam: {
     position: "absolute",
     width: 76,
@@ -542,7 +362,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 14,
   },
-
   logoGlowWrap: {
     width: 140,
     height: 112,
@@ -550,7 +369,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "relative",
   },
-
   logoGlowOne: {
     position: "absolute",
     width: 124,
@@ -559,7 +377,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,210,138,0.24)",
     elevation: 10,
   },
-
   logoGlowTwo: {
     position: "absolute",
     width: 90,
@@ -567,40 +384,33 @@ const styles = StyleSheet.create({
     borderRadius: 45,
     backgroundColor: "rgba(255,255,255,0.08)",
   },
-
   logoImage: {
     width: 136,
     height: 108,
     zIndex: 2,
   },
-
   brandLine: {
     marginTop: 2,
     flexDirection: "row",
     alignItems: "baseline",
     justifyContent: "center",
-    flexWrap: "nowrap",
   },
-
   homeText: {
     fontSize: 28,
     fontWeight: "900",
     color: COLORS.brownDark,
   },
-
   townText: {
     fontSize: 28,
     fontWeight: "900",
     color: COLORS.orange,
   },
-
   onTrackText: {
     fontSize: 36,
     fontWeight: "900",
     color: COLORS.goldLight,
     letterSpacing: -1,
   },
-
   luxuryPill: {
     marginTop: 6,
     flexDirection: "row",
@@ -613,7 +423,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255,210,138,0.36)",
   },
-
   luxuryPillText: {
     color: "rgba(255,246,234,0.92)",
     fontSize: 10.5,
@@ -630,123 +439,36 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.78)",
     elevation: 10,
   },
-
-  cardTitleRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
+  cardTitleBlock: {
+    gap: 3,
   },
-
   cardEyebrow: {
     fontSize: 9,
     fontWeight: "900",
     color: COLORS.orange,
     letterSpacing: 1,
-    marginBottom: 2,
   },
-
-  cardEyebrowManager: {
-    color: COLORS.blue,
-  },
-
-  cardEyebrowAdmin: {
-    color: COLORS.gold,
-  },
-
   cardTitle: {
     fontSize: 22,
     fontWeight: "900",
     color: COLORS.brown,
     letterSpacing: -0.3,
   },
-
   cardSubtitle: {
     fontSize: 12,
     color: COLORS.gray,
     lineHeight: 16,
-    marginTop: 2,
     fontWeight: "600",
-  },
-
-  cardIconBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-  },
-
-  staffCardIconBadge: {
-    backgroundColor: COLORS.orangeSoft,
-    borderColor: "#FED7AA",
-  },
-
-  managerCardIconBadge: {
-    backgroundColor: COLORS.blueSoft,
-    borderColor: "#C9DBEF",
-  },
-
-  adminCardIconBadge: {
-    backgroundColor: "rgba(201,133,43,0.12)",
-    borderColor: "rgba(201,133,43,0.35)",
-  },
-
-  portalSwitch: {
-    flexDirection: "row",
-    gap: 8,
-  },
-
-  portalButton: {
-    flex: 1,
-    minHeight: 40,
-    borderWidth: 1,
-    borderRadius: 15,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-    backgroundColor: COLORS.beige,
-    borderColor: COLORS.beigeDark,
-  },
-
-  staffPortalButtonActive: {
-    backgroundColor: COLORS.orange,
-    borderColor: COLORS.orange,
-  },
-
-  managerPortalButtonActive: {
-    backgroundColor: COLORS.blue,
-    borderColor: COLORS.blue,
-  },
-
-  adminPortalButtonActive: {
-    backgroundColor: COLORS.gold,
-    borderColor: COLORS.gold,
-  },
-
-  portalButtonText: {
-    fontSize: 13,
-    fontWeight: "900",
-    color: COLORS.brown,
-  },
-
-  portalButtonTextActive: {
-    color: COLORS.white,
   },
 
   fieldBlock: {
     gap: 5,
   },
-
   fieldLabel: {
     fontSize: 11.5,
     fontWeight: "900",
     color: COLORS.brown,
   },
-
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
@@ -756,19 +478,9 @@ const styles = StyleSheet.create({
     borderColor: "#E4D8CC",
     overflow: "hidden",
   },
-
-  inputWrapperManager: {
-    borderColor: "#C9DBEF",
-  },
-
-  inputWrapperAdmin: {
-    borderColor: "rgba(201,133,43,0.45)",
-  },
-
   inputIcon: {
     marginLeft: 10,
   },
-
   input: {
     flex: 1,
     fontSize: 14.5,
@@ -777,7 +489,6 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     fontWeight: "700",
   },
-
   eyeButton: {
     paddingHorizontal: 10,
     paddingVertical: 10,
@@ -792,30 +503,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     elevation: 4,
-  },
-
-  staffSignInButton: {
     backgroundColor: COLORS.orange,
   },
-
-  managerSignInButton: {
-    backgroundColor: COLORS.blue,
-  },
-
-  adminSignInButton: {
-    backgroundColor: COLORS.gold,
-  },
-
   btnDisabled: {
     opacity: 0.6,
   },
-
   signInText: {
     color: COLORS.white,
     fontSize: 14,
     fontWeight: "900",
   },
-
   hint: {
     fontSize: 11,
     color: COLORS.gray,
@@ -831,7 +528,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.error,
   },
-
   errorText: {
     fontSize: 12,
     color: "#B91C1C",
@@ -843,39 +539,32 @@ const styles = StyleSheet.create({
     paddingTop: 13,
     gap: 5,
   },
-
   footerBrandRow: {
     flexDirection: "row",
     alignItems: "baseline",
     justifyContent: "center",
-    flexWrap: "nowrap",
   },
-
   footerHome: {
     fontSize: 12,
     color: COLORS.cream,
     fontWeight: "900",
   },
-
   footerTown: {
     fontSize: 12,
     color: COLORS.orange,
     fontWeight: "900",
   },
-
   footerOnTrack: {
     fontSize: 12,
     color: COLORS.goldLight,
     fontWeight: "900",
   },
-
   footerVisit: {
     fontSize: 11.5,
     color: COLORS.white,
     fontWeight: "900",
     textDecorationLine: "underline",
   },
-
   footerMetaRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -884,31 +573,26 @@ const styles = StyleSheet.create({
     gap: 5,
     paddingHorizontal: 8,
   },
-
   secureLoginPill: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
   },
-
   secureLoginText: {
     fontSize: 10.5,
     color: COLORS.goldLight,
     fontWeight: "900",
   },
-
   footerDot: {
     fontSize: 12,
     color: "rgba(255,246,234,0.55)",
     fontWeight: "900",
   },
-
   footerMetaLink: {
     fontSize: 10.5,
     color: "rgba(255,246,234,0.86)",
     fontWeight: "800",
   },
-
   footerQuote: {
     marginTop: 1,
     fontSize: 10.5,

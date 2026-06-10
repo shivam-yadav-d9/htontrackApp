@@ -25,12 +25,21 @@ export const useAuthStore = create<AuthStore>((set) => ({
   refresh_token: null,
   is_authenticated: false,
   is_loading: true,
-
   login: async (user, access_token, refresh_token) => {
     await storage.setItem(TOKEN_KEY, access_token);
     await storage.setItem(REFRESH_KEY, refresh_token);
     await storage.setItem(USER_KEY, JSON.stringify(user));
-    set({ user, access_token, refresh_token, is_authenticated: true });
+
+    console.log('TOKEN SAVED:', access_token);
+    console.log('USER SAVED:', user);
+
+    set({
+      user,
+      access_token,
+      refresh_token,
+      is_authenticated: true,
+      is_loading: false,
+    });
   },
 
   logout: async () => {
@@ -43,10 +52,16 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
   },
   restoreSession: async () => {
+    console.log('RESTORE SESSION CALLED');
+
     try {
       const token = await storage.getItem(TOKEN_KEY);
       const refreshToken = await storage.getItem(REFRESH_KEY);
       const userString = await storage.getItem(USER_KEY);
+
+      console.log('RESTORE TOKEN:', token);
+      console.log('RESTORE REFRESH:', refreshToken);
+      console.log('RESTORE USER:', userString);
 
       if (token && userString) {
         const user = JSON.parse(userString);
@@ -71,14 +86,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       });
     } catch (error) {
       console.log(error);
-
-      set({
-        user: null,
-        access_token: null,
-        refresh_token: null,
-        is_authenticated: false,
-        is_loading: false,
-      });
     }
   },
+
 }));
