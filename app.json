@@ -7,7 +7,6 @@
     "icon": "./src/assets/images/appicon.png",
     "scheme": "karmyogi",
     "userInterfaceStyle": "light",
-
     "ios": {
       "icon": "./src/assets/images/appicon.png",
       "supportsTablet": true,
@@ -19,7 +18,6 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "HomeTown Karmyogi uses your location to verify store attendance."
       }
     },
-
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/appicon.png",
@@ -38,12 +36,10 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
-
     "web": {
       "output": "static",
       "favicon": "./src/assets/images/appicon.png"
     },
-
     "plugins": [
       "expo-router",
       [
@@ -62,19 +58,17 @@
         {
           "backgroundColor": "#3B2416",
           "android": {
-            "image": "./src/assets/images/splash-icon.png",
+            "image": "./src/assets/images/appicon.png",
             "imageWidth": 76
           }
         }
       ],
       "expo-font"
     ],
-
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
-
     "extra": {
       "router": {},
       "eas": {
