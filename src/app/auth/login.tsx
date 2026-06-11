@@ -33,7 +33,7 @@ import hometownLogo from "../../assets/images/react-logo-removebg-preview.png";
 export default function LoginScreen() {
   const { login } = useAuthStore();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -48,11 +48,11 @@ export default function LoginScreen() {
   }
 
   async function handleEmailLogin() {
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanUsername = username.trim();
     const cleanPassword = password.trim();
 
-    if (!cleanEmail) {
-      setError("Please enter your email address.");
+    if (!cleanUsername) {
+      setError("Please enter Employee ID.");
       return;
     }
 
@@ -66,7 +66,7 @@ export default function LoginScreen() {
 
     try {
       const result = await authService.loginWithEmail({
-        email: cleanEmail,
+        username: cleanUsername,
         password: cleanPassword,
       });
 
@@ -79,8 +79,8 @@ export default function LoginScreen() {
           (role === "ADMIN"
             ? "HomeTown Admin"
             : role === "MANAGER"
-            ? "Rohan Malhotra"
-            : "Priya Sharma"),
+              ? "Rohan Malhotra"
+              : "Priya Sharma"),
         role,
       };
 
@@ -165,7 +165,7 @@ export default function LoginScreen() {
 
               {/* Email */}
               <View style={styles.fieldBlock}>
-                <Text style={styles.fieldLabel}>Email Address</Text>
+                <Text style={styles.fieldLabel}>Employee ID</Text>
                 <View style={styles.inputWrapper}>
                   <Mail
                     size={16}
@@ -174,13 +174,12 @@ export default function LoginScreen() {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="your@hometown.com"
+                    placeholder="RC000447"
                     placeholderTextColor={COLORS.gray}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
+                    autoCapitalize="characters"
                     autoCorrect={false}
-                    value={email}
-                    onChangeText={setEmail}
+                    value={username}
+                    onChangeText={setUsername}
                   />
                 </View>
               </View>

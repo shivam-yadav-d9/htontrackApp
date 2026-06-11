@@ -2,6 +2,7 @@ import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, router } from 'expo-router';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 
 import { useAuthStore } from '@/store/auth.store';
 import { COLORS } from '@/constants/theme';
@@ -69,9 +70,10 @@ export default function RootLayout() {
       </View>
     );
   }
-
   return (
     <ThemeProvider value={KarmyogiTheme}>
+      <StatusBar style="dark" />
+
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="auth/login" />
         <Stack.Screen name="auth/verify-otp" />

@@ -386,42 +386,57 @@ export const attendanceService = {
   // async getHistory(): Promise<MyAttendanceResponse> {
   //   return attendanceService.getMyAttendance();
   // },
-
   async getMyAttendance() {
     const user = useAuthStore.getState().user;
 
     console.log("ATTENDANCE LIST API CALLED", user?.id);
+    console.log("EMPLOYEE CODE =", user?.employee_code);
 
     const records = await api.get(
       `/ontrack/attendance/${user?.id}`
     );
 
-    console.log("ATTENDANCE RECORDS", records);
+    console.log(
+      "RAW ATTENDANCE RESPONSE",
+      JSON.stringify(records, null, 2)
+    );
 
     return {
       active_session:
-        records.find((x: any) => x.status === "OPEN") || null,
+        records.find(
+          (x: any) =>
+            x.latestCheckIn &&
+            !x.latestCheckOut
+        ) || null,
 
-      sessions: records.map((item: any) => ({
-        id: item._id,
+ sessions: records.map((item: any) => ({
+  id: item._id ?? item.date,
 
-        attendanceDate: item.attendanceDate,
-        checkIn: item.checkIn,
-        checkOut: item.checkOut,
+  attendanceDate: item.attendanceDate ?? item.date,
 
-        durationMinutes: item.durationMinutes,
+  checkIn: item.checkIn ?? item.latestCheckIn,
 
-        status: item.status,
+  checkOut: item.checkOut ?? item.latestCheckOut,
 
-        checkInType: item.checkInType,
-        checkOutType: item.checkOutType,
+  durationMinutes:
+    item.durationMinutes ??
+    item.totalDurationMinutes ??
+    0,
 
-        checkInLocation: item.checkInLocation,
-        checkOutLocation: item.checkOutLocation,
+  totalDurationMinutes: item.totalDurationMinutes ?? 0,
 
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-      })),
+  totalDurationFormatted:
+    item.totalDurationFormatted ?? "0h 0m",
+
+  totalSessions: item.totalSessions ?? 0,
+
+  status:
+    item.latestCheckIn && !item.latestCheckOut
+      ? "OPEN"
+      : item.latestCheckIn && item.latestCheckOut
+      ? "CLOSED"
+      : item.status,
+})),
     };
   },
   async getManagerAttendance() {

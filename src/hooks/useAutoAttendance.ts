@@ -6,7 +6,7 @@ import { watchLocation } from '@/utils/location';
 const STORE_LAT = 19.136851;
 const STORE_LNG = 72.862235;
 const CHECKIN_RADIUS = 100;
-const CHECKOUT_RADIUS = 150;
+const CHECKOUT_RADIUS = 100;
 
 function getDistanceInMeters(
     lat1: number, lon1: number,

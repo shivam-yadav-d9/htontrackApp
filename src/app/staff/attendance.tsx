@@ -104,6 +104,7 @@ export default function StaffAttendanceScreen() {
   const [daySummary, setDaySummary] = useState<any>(null);
   const [graph, setGraph] = useState<StaffMonthWiseResponse | null>(null);
 
+
   // Correction form
   const [correctionType, setCorrectionType] = useState('');
   const [correctionReason, setCorrectionReason] = useState('');
@@ -178,13 +179,40 @@ export default function StaffAttendanceScreen() {
   async function loadAttendance() {
     try {
       const data = await attendanceService.getMyAttendance();
+
+      console.log(
+        "ATTENDANCE FULL RESPONSE =",
+        JSON.stringify(data, null, 2)
+      );
+
+      console.log(
+        "TODAY SESSIONS =",
+        JSON.stringify(data?.sessions, null, 2)
+      );
+
       setAttendance(data);
+
       try {
         const summary = await attendanceService.getMyDaySummary(getTodayDate());
+
+        console.log(
+          "DAY SUMMARY =",
+          JSON.stringify(summary, null, 2)
+        );
+
         setDaySummary(summary);
-      } catch { /* silent */ }
+      } catch (err) {
+        console.log("DAY SUMMARY ERROR =", err);
+      }
     } catch (err) {
-      Alert.alert('Error', err instanceof Error ? err.message : 'Could not load attendance.');
+      console.log("ATTENDANCE ERROR =", err);
+
+      Alert.alert(
+        "Error",
+        err instanceof Error
+          ? err.message
+          : "Could not load attendance."
+      );
     }
   }
 
@@ -306,7 +334,9 @@ export default function StaffAttendanceScreen() {
     (attendance?.sessions ?? []).filter(
       (item) => item.attendanceDate === today
     );
-  const isCheckedIn = !!activeSession;
+  const isCheckedIn =
+    !!activeSession?.latestCheckIn &&
+    !activeSession?.latestCheckOut;
   const summary = graph?.summary;
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -383,8 +413,23 @@ export default function StaffAttendanceScreen() {
                   <Text style={styles.attendanceTime}>Check In: {formatDateTime(item.checkIn)}</Text>
                   <Text style={styles.attendanceTime}>Check Out: {formatDateTime(item.checkOut)}</Text>
                   <Text style={styles.attendanceTime}>Duration: {formatDuration(item.durationMinutes)}</Text>
-                  <Text style={styles.attendanceTime}>Check-In Type: {item.checkInType}</Text>
-                  <Text style={styles.attendanceTime}>Check-Out Type: {item.checkOutType}</Text>
+
+                  <Text style={styles.attendanceTime}>
+                    Total Sessions: {item.totalSessions}
+                  </Text>
+
+                  <Text style={styles.attendanceTime}>
+                    Total Duration Minutes: {item.totalDurationMinutes}
+                  </Text>
+
+                  <Text style={styles.attendanceTime}>
+                    Total Duration: {item.totalDurationFormatted}
+                  </Text>
+
+                  <Text style={styles.attendanceTime}>
+                    Status: {item.status}
+                  </Text>
+
                   {item.auto_checkin && <Text style={styles.autoTag}>● Auto check-in</Text>}
                   {item.auto_checkout && <Text style={[styles.autoTag, { color: '#B45309' }]}>● Auto checkout</Text>}
                 </View>

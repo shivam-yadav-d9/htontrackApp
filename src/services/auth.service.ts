@@ -36,10 +36,13 @@ interface UserSeed {
   team_size?: number;
 }
 
-async function offlineLogin(email: string, password: string): Promise<LoginResponse> {
+async function offlineLogin(username: string, password: string): Promise<LoginResponse> {
   const users = await localDb.getCollection<UserSeed>('users');
-  const user = users.find((u) => u.email === email && u.password === password);
-  if (!user) throw new Error('Invalid email or password');
+  const user = users.find(
+    (u) =>
+      u.employee_code === username &&
+      u.password === password
+  ); if (!user) throw new Error('Invalid Employee ID or Password');
 
   const token = `local-token-${user.id}`;
   const { password: _pw, ...safeUser } = user;
@@ -55,28 +58,36 @@ async function offlineLogin(email: string, password: string): Promise<LoginRespo
 
 export const authService = {
   async loginWithEmail(payload: LoginRequest): Promise<LoginResponse> {
-    console.log("LOGIN API CALLED", payload);
-
-    if (APP_MODE === 'offline_apk') {
-      return offlineLogin(payload.email, payload.password);
-    }
 
     const result = await api.post<any>(
-      '/users/login',
-      payload
+      '/users/login-ontrack',
+      {
+        username: payload.username,
+        password: payload.password,
+      }
     );
-
-    console.log("LOGIN API RESPONSE", result);
 
     return {
       access_token: 'dummy-token',
       refresh_token: 'dummy-token',
       token_type: 'bearer',
-
       user: {
         id: result._id,
         full_name: result.name,
         email: result.email,
+
+        employee_code: result.employeeNumber,
+        mobile: String(result.phone ?? ""),
+
+        department: result.department,
+        designation: result.jobTitle,
+
+        city: result.city,
+        state: result.state,
+
+        reporting_manager: result.reportingTo,
+
+        date_of_joining: result.dateJoined,
 
         role:
           result.role === "ADMIN"
@@ -86,7 +97,24 @@ export const authService = {
               : "STAFF",
 
         is_active: result.isActive,
-      },
+
+        // Additional fields from login API
+        location: result.location,
+        band: result.band,
+        workerType: result.workerType,
+        employmentStatus: result.employmentStatus,
+
+        format: result.format,
+        subFormat: result.subFormat,
+
+        functions: result.functions,
+        subFunction: result.subFunction,
+
+        employeeZone: result.employeeZone,
+
+        costCenterNo: result.costCenterNo,
+        costCenterDescription: result.costCenterDescription,
+      }
     };
   },
 

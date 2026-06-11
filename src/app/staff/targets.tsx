@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useAuthStore } from "@/store/auth.store";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -81,8 +82,9 @@ interface DailyTarget {
 export default function TargetsScreen() {
   // The employeeId should come from your auth context / AsyncStorage in your real app
   // Replace this with however you store the logged-in user's id
-  const EMPLOYEE_ID = 1001; // TODO: pull from auth context
+  const user = useAuthStore((state) => state.user);
 
+  const EMPLOYEE_ID = user?.employee_code;
   const [monthly, setMonthly] = useState<MonthlyTarget | null>(null);
   const [daily, setDaily] = useState<DailyTarget[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,12 +97,23 @@ export default function TargetsScreen() {
 
   async function loadData() {
     try {
+      if (!EMPLOYEE_ID) {
+        console.log("NO EMPLOYEE ID FOUND");
+        return;
+      }
+
       setError('');
+
+      console.log("TARGET USER =", user);
+      console.log("TARGET EMPLOYEE ID =", EMPLOYEE_ID);
 
       const [monthlyRes, dailyRes] = await Promise.all([
         targetService.getMonthlyTarget(EMPLOYEE_ID),
         targetService.getDailyTargets(EMPLOYEE_ID),
       ]);
+
+      console.log("MONTHLY TARGET =", monthlyRes);
+      console.log("DAILY TARGET =", dailyRes);
 
       console.log('MONTHLY', monthlyRes);
       console.log('DAILY', dailyRes);
@@ -108,7 +121,13 @@ export default function TargetsScreen() {
       setMonthly(monthlyRes ?? null);
       setDaily(dailyRes ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load targets');
+      console.log("TARGET ERROR =", err);
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load targets"
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -133,34 +152,34 @@ export default function TargetsScreen() {
 
   // ── loading / error states ──────────────────────────────────────────────────
 
-if (loading && !monthly) {
-  return (
-    <SafeAreaView style={styles.safe}>
-      <ActivityIndicator
-        style={{ marginTop: 40 }}
-        color={COLORS.orange}
-      />
-    </SafeAreaView>
-  );
-}
+  if (loading && !monthly) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <ActivityIndicator
+          style={{ marginTop: 40 }}
+          color={COLORS.orange}
+        />
+      </SafeAreaView>
+    );
+  }
 
-if (error && !monthly) {
-  return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.errorWrap}>
-        <AlertCircle size={32} color={COLORS.error} />
-        <Text style={styles.errorText}>{error}</Text>
+  if (error && !monthly) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.errorWrap}>
+          <AlertCircle size={32} color={COLORS.error} />
+          <Text style={styles.errorText}>{error}</Text>
 
-        <TouchableOpacity
-          style={styles.retryBtn}
-          onPress={loadData}
-        >
-          <Text style={styles.retryText}>Try Again</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
-}
+          <TouchableOpacity
+            style={styles.retryBtn}
+            onPress={loadData}
+          >
+            <Text style={styles.retryText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // ── render ─────────────────────────────────────────────────────────────────
 

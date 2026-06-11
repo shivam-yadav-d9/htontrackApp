@@ -168,8 +168,8 @@ export default function ProfileScreen() {
   const completionPct = profile?.profile_completion_percentage ?? 0;
 
   return (
-  <ScreenLayout title="Profile">
-  <SafeAreaView style={styles.safe} edges={['top']}>
+    <ScreenLayout title="Profile">
+      <SafeAreaView style={styles.safe} edges={['top']}>
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.content}
@@ -215,8 +215,8 @@ export default function ProfileScreen() {
             <View style={[styles.statsCard, Shadow.card]}>
               {[
                 { label: 'Attendance', value: `${attendancePct}%` },
-                { label: 'Target',     value: `${targetPct}%` },
-                { label: 'Courses',    value: coursesText },
+                { label: 'Target', value: `${targetPct}%` },
+                { label: 'Courses', value: coursesText },
                 { label: 'Certificates', value: String(certCount) },
               ].map((s) => (
                 <View key={s.label} style={styles.statItem}>
@@ -245,8 +245,8 @@ export default function ProfileScreen() {
               <Text style={styles.completionLabel}>
                 {completionPct >= 90 ? 'Complete'
                   : completionPct >= 76 ? 'Good — add emergency contact'
-                  : completionPct >= 51 ? 'Basic complete'
-                  : 'Incomplete — please update profile'}
+                    : completionPct >= 51 ? 'Basic complete'
+                      : 'Incomplete — please update profile'}
               </Text>
             </View>
           ) : null}
@@ -302,6 +302,72 @@ export default function ProfileScreen() {
               value={profileUser?.date_of_joining ? new Date(profileUser.date_of_joining).toDateString() : '—'}
             />
             <InfoRow icon={<BadgeCheck size={16} color="#C95F18" />} label="Status" value={(profileUser?.status ?? 'active').toUpperCase()} />
+
+            <InfoRow
+              icon={<MapPin size={16} color="#C95F18" />}
+              label="Location"
+              value={profileUser?.location ?? "—"}
+            />
+
+            <InfoRow
+              icon={<BadgeCheck size={16} color="#C95F18" />}
+              label="Band"
+              value={profileUser?.band ?? "—"}
+            />
+
+            <InfoRow
+              icon={<BadgeCheck size={16} color="#C95F18" />}
+              label="Worker Type"
+              value={profileUser?.workerType ?? "—"}
+            />
+
+            <InfoRow
+              icon={<BadgeCheck size={16} color="#C95F18" />}
+              label="Employment Status"
+              value={profileUser?.employmentStatus ?? "—"}
+            />
+
+            <InfoRow
+              icon={<Building2 size={16} color="#C95F18" />}
+              label="Format"
+              value={profileUser?.format ?? "—"}
+            />
+
+            <InfoRow
+              icon={<Building2 size={16} color="#C95F18" />}
+              label="Sub Format"
+              value={profileUser?.subFormat ?? "—"}
+            />
+
+            <InfoRow
+              icon={<Building2 size={16} color="#C95F18" />}
+              label="Functions"
+              value={profileUser?.functions ?? "—"}
+            />
+
+            <InfoRow
+              icon={<Building2 size={16} color="#C95F18" />}
+              label="Sub Function"
+              value={profileUser?.subFunction ?? "—"}
+            />
+
+            <InfoRow
+              icon={<Building2 size={16} color="#C95F18" />}
+              label="Employee Zone"
+              value={profileUser?.employeeZone ?? "—"}
+            />
+
+            <InfoRow
+              icon={<Building2 size={16} color="#C95F18" />}
+              label="Cost Center No"
+              value={profileUser?.costCenterNo ?? "—"}
+            />
+
+            <InfoRow
+              icon={<Building2 size={16} color="#C95F18" />}
+              label="Cost Center Description"
+              value={profileUser?.costCenterDescription ?? "—"}
+            />
           </View>
 
           {/* Personal Details */}
@@ -330,14 +396,14 @@ export default function ProfileScreen() {
             <View style={[styles.card, Shadow.card]}>
               <Text style={styles.cardTitle}>Performance Snapshot</Text>
               <View style={styles.snapGrid}>
-                <SnapCard label="Monthly Targets"  value={String(summary.monthly_target_count)} />
-                <SnapCard label="Daily Targets"    value={String(summary.daily_target_count)} />
-                <SnapCard label="Weekly Offs"      value={String(summary.weekly_off_count)} />
-                <SnapCard label="Attendance"       value={String(summary.attendance_session_count)} />
-                <SnapCard label="Courses"          value={String(summary.course_attempt_count)} />
-                <SnapCard label="Certificates"     value={String(summary.certificate_count)} />
-                <SnapCard label="Awards"           value={String(summary.award_count)} />
-                <SnapCard label="Incentives"       value={String(summary.incentive_record_count)} />
+                <SnapCard label="Monthly Targets" value={String(summary.monthly_target_count)} />
+                <SnapCard label="Daily Targets" value={String(summary.daily_target_count)} />
+                <SnapCard label="Weekly Offs" value={String(summary.weekly_off_count)} />
+                <SnapCard label="Attendance" value={String(summary.attendance_session_count)} />
+                <SnapCard label="Courses" value={String(summary.course_attempt_count)} />
+                <SnapCard label="Certificates" value={String(summary.certificate_count)} />
+                <SnapCard label="Awards" value={String(summary.award_count)} />
+                <SnapCard label="Incentives" value={String(summary.incentive_record_count)} />
               </View>
             </View>
           ) : null}
@@ -345,31 +411,31 @@ export default function ProfileScreen() {
           {/* Quick Access */}
           <View style={[styles.card, Shadow.card]}>
             <Text style={styles.cardTitle}>Quick Access</Text>
-            <MenuItem icon={<BookOpen size={16} color={COLORS.blue} />}    label="My Courses"      onPress={() => router.push('/staff/courses')} />
-            <MenuItem icon={<Award size={16} color={COLORS.warning} />}    label="My Certificates" onPress={() => router.push('/staff/certificates')} />
-            <MenuItem icon={<Target size={16} color={COLORS.orange} />}    label="My Targets"      onPress={() => router.push('/staff/targets')} />
-            <MenuItem icon={<ScrollText size={16} color={COLORS.success} />} label="My Documents"  onPress={() => router.push('/staff/documents')} />
+            <MenuItem icon={<BookOpen size={16} color={COLORS.blue} />} label="My Courses" onPress={() => router.push('/staff/courses')} />
+            <MenuItem icon={<Award size={16} color={COLORS.warning} />} label="My Certificates" onPress={() => router.push('/staff/certificates')} />
+            <MenuItem icon={<Target size={16} color={COLORS.orange} />} label="My Targets" onPress={() => router.push('/staff/targets')} />
+            <MenuItem icon={<ScrollText size={16} color={COLORS.success} />} label="My Documents" onPress={() => router.push('/staff/documents')} />
           </View>
 
           {/* Settings */}
           <View style={[styles.card, Shadow.card]}>
             <Text style={styles.cardTitle}>Settings</Text>
-            <MenuItem icon={<Shield size={16} color={COLORS.blue} />}      label="Security & Privacy" onPress={() => {}} />
-            <MenuItem icon={<HelpCircle size={16} color={COLORS.blue} />}  label="Help & Support"     onPress={() => {}} />
-            <MenuItem icon={<LogOut size={16} color={COLORS.error} />}     label="Logout"             onPress={handleLogout} danger />
+            <MenuItem icon={<Shield size={16} color={COLORS.blue} />} label="Security & Privacy" onPress={() => { }} />
+            <MenuItem icon={<HelpCircle size={16} color={COLORS.blue} />} label="Help & Support" onPress={() => { }} />
+            <MenuItem icon={<LogOut size={16} color={COLORS.error} />} label="Logout" onPress={handleLogout} danger />
           </View>
 
           <Text style={styles.version}>Karmyogi Staff App v1.0.0</Text>
         </ScrollView>
-            </SafeAreaView>
+      </SafeAreaView>
 
-      </ScreenLayout>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
   // SafeAreaView top inset now matches the blue header — gap gone
-  safe:   { flex: 1, backgroundColor: COLORS.blue },
+  safe: { flex: 1, backgroundColor: COLORS.blue },
   scroll: { flex: 1, backgroundColor: COLORS.beige },
   content: { paddingBottom: 40 },
 
@@ -390,8 +456,8 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: COLORS.white,
   },
-  avatarText:  { fontSize: 30, fontWeight: '900', color: COLORS.white },
-  userName:    { fontSize: 22, fontWeight: '800', color: COLORS.white },
+  avatarText: { fontSize: 30, fontWeight: '900', color: COLORS.white },
+  userName: { fontSize: 22, fontWeight: '800', color: COLORS.white },
   designation: { fontSize: 13, color: COLORS.white + 'CC', marginTop: 2 },
   roleBadge: {
     backgroundColor: COLORS.orange,
@@ -424,7 +490,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
-  statItem:  { alignItems: 'center', gap: 4 },
+  statItem: { alignItems: 'center', gap: 4 },
   statValue: { fontSize: 20, fontWeight: '900', color: COLORS.blue },
   statLabel: { fontSize: 11, color: COLORS.gray },
 
@@ -490,7 +556,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginVertical: 8,
   },
-  progressFill:    { height: 8, borderRadius: 999 },
+  progressFill: { height: 8, borderRadius: 999 },
   completionLabel: { fontSize: 12, color: '#8A8178', fontWeight: '700' },
-  snapGrid:        { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  snapGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
 });

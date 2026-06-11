@@ -13,6 +13,22 @@ export interface User {
   department?: string;
   designation?: string;
 
+  location?: string;
+  band?: string;
+  workerType?: string;
+  employmentStatus?: string;
+
+  format?: string;
+  subFormat?: string;
+
+  functions?: string;
+  subFunction?: string;
+
+  employeeZone?: string;
+
+  costCenterNo?: string;
+  costCenterDescription?: string;
+
   store_code?: string;
   store_id?: string;
   store_name?: string;
@@ -47,10 +63,10 @@ export interface User {
   permissions?: string[];
 }
 
-export type LoginRequest = {
-  email: string;
+export interface LoginRequest {
+  username: string;
   password: string;
-};
+}
 
 export type LoginResponse = {
   access_token: string;

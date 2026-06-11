@@ -4,11 +4,12 @@
     "slug": "karmyogi-hometown-staff",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/appicon.png",
     "scheme": "karmyogi",
     "userInterfaceStyle": "light",
+
     "ios": {
-      "icon": "./assets/images/icon.png",
+      "icon": "./assets/images/appicon.png",
       "supportsTablet": true,
       "bundleIdentifier": "com.hometown.karmyogi.staff",
       "buildNumber": "1",
@@ -18,12 +19,11 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "HomeTown Karmyogi uses your location to verify store attendance."
       }
     },
+
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#C8A24A",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/appicon.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.hometown.karmyogi.staff",
@@ -38,10 +38,12 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
+
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/appicon.png"
     },
+
     "plugins": [
       "expo-router",
       [
@@ -67,10 +69,12 @@
       ],
       "expo-font"
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
+
     "extra": {
       "router": {},
       "eas": {
