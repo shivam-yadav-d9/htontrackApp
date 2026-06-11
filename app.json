@@ -4,12 +4,12 @@
     "slug": "karmyogi-hometown-staff",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/appicon.png",
+    "icon": "./src/assets/images/appicon.png",
     "scheme": "karmyogi",
     "userInterfaceStyle": "light",
 
     "ios": {
-      "icon": "./assets/images/appicon.png",
+      "icon": "./src/assets/images/appicon.png",
       "supportsTablet": true,
       "bundleIdentifier": "com.hometown.karmyogi.staff",
       "buildNumber": "1",
@@ -22,8 +22,8 @@
 
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#C8A24A",
-        "foregroundImage": "./assets/images/appicon.png"
+        "foregroundImage": "./src/assets/images/appicon.png",
+        "backgroundColor": "#C8A24A"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.hometown.karmyogi.staff",
@@ -41,7 +41,7 @@
 
     "web": {
       "output": "static",
-      "favicon": "./assets/images/appicon.png"
+      "favicon": "./src/assets/images/appicon.png"
     },
 
     "plugins": [
@@ -62,7 +62,7 @@
         {
           "backgroundColor": "#3B2416",
           "android": {
-            "image": "./assets/images/splash-icon.png",
+            "image": "./src/assets/images/splash-icon.png",
             "imageWidth": 76
           }
         }
