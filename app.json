@@ -15,7 +15,9 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "HomeTown Karmyogi uses your location to verify store attendance.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "HomeTown Karmyogi uses your location to verify store attendance."
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "HomeTown Karmyogi uses your location to verify store attendance.",
+        "NSLocationAlwaysUsageDescription": "HomeTown Karmyogi uses your location to automatically check you in and out of the store.",
+        "UIBackgroundModes": ["location"]
       }
     },
     "android": {
@@ -33,7 +35,8 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION"
       ]
     },
     "web": {
@@ -46,8 +49,10 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "HomeTown Karmyogi uses your location to verify store attendance.",
-          "locationAlwaysAndWhenInUsePermission": "HomeTown Karmyogi uses your location to verify store attendance.",
-          "isAndroidBackgroundLocationEnabled": false
+          "locationAlwaysAndWhenInUsePermission": "HomeTown Karmyogi uses your location to automatically check you in and out of the store.",
+          "locationAlwaysPermission": "HomeTown Karmyogi uses your location in the background to automatically check you out when you leave the store.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
         }
       ],
       "expo-document-picker",

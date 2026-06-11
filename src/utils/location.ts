@@ -11,10 +11,16 @@ export type CurrentLocation = {
 };
 
 export async function requestLocationPermission(): Promise<true> {
-  const { status } = await Location.requestForegroundPermissionsAsync();
-  if (status !== 'granted') {
+  const { status: fg } = await Location.requestForegroundPermissionsAsync();
+  if (fg !== 'granted') {
     throw new Error('Location permission is required for attendance.');
   }
+
+  const { status: bg } = await Location.requestBackgroundPermissionsAsync();
+  if (bg !== 'granted') {
+    throw new Error('Background location permission is required for auto checkout.');
+  }
+
   return true;
 }
 
@@ -39,9 +45,10 @@ export async function watchLocation(
   onError?: (error: Error) => void,
 ): Promise<Location.LocationSubscription> {
   await requestLocationPermission();
+
   return Location.watchPositionAsync(
     {
-      accuracy: Location.Accuracy.High,
+      accuracy: Location.Accuracy.Balanced,
       timeInterval: 15000,
       distanceInterval: 15,
     },
