@@ -226,7 +226,7 @@ export const attendanceService = {
     const user = useAuthStore.getState().user;
 
     console.log("CHECKIN API", {
-      employeeId: user?.id,
+      employeeId: user?.employee_code,
       lat: payload.latitude,
       lang: payload.longitude,
     });
@@ -234,7 +234,7 @@ export const attendanceService = {
     return api.post(
       "/ontrack/attendance/check-in",
       {
-        employeeId: user?.id,
+        employeeId: user?.employee_code,
         lat: payload.latitude.toString(),
         lang: payload.longitude.toString(),
       }
@@ -246,9 +246,8 @@ export const attendanceService = {
     longitude: number;
   }) {
     const user = useAuthStore.getState().user;
-
     console.log("CHECKOUT API", {
-      employeeId: user?.id,
+      employeeId: user?.employee_code,
       lat: payload.latitude,
       lang: payload.longitude,
     });
@@ -256,7 +255,7 @@ export const attendanceService = {
     return api.post(
       "/ontrack/attendance/check-out",
       {
-        employeeId: user?.id,
+        employeeId: user?.employee_code,
         lat: payload.latitude.toString(),
         lang: payload.longitude.toString(),
       }
@@ -386,59 +385,38 @@ export const attendanceService = {
   // async getHistory(): Promise<MyAttendanceResponse> {
   //   return attendanceService.getMyAttendance();
   // },
-  async getMyAttendance() {
-    const user = useAuthStore.getState().user;
+async getMyAttendance() {
+  const user = useAuthStore.getState().user;
+  const response = await api.get(`/ontrack/attendance/${user?.employee_code}`);
+  const records = response?.data ?? response;
+  const rawList: any[] = Array.isArray(records) ? records : [];
 
-    console.log("ATTENDANCE LIST API CALLED", user?.id);
-    console.log("EMPLOYEE CODE =", user?.employee_code);
+  const mapRecord = (item: any) => ({
+    id: item._id ?? item.date,
+    attendanceDate: item.attendanceDate ?? item.date,
+    checkIn: item.checkIn ?? item.oldestCheckIn ?? item.latestCheckIn,
+    checkOut: item.checkOut ?? item.latestCheckOut,
+    durationMinutes: item.durationMinutes ?? item.totalDurationMinutes ?? 0,
+    totalDurationMinutes: item.totalDurationMinutes ?? 0,
+    totalDurationFormatted: item.totalDurationFormatted ?? '0h 0m',
+    totalSessions: item.totalSessions ?? 0,
+    status:
+      (item.oldestCheckIn ?? item.latestCheckIn ?? item.checkIn) && !item.latestCheckOut
+        ? 'OPEN'
+        : (item.oldestCheckIn ?? item.latestCheckIn ?? item.checkIn) && item.latestCheckOut
+        ? 'CLOSED'
+        : item.status,
+  });
 
-    const records = await api.get(
-      `/ontrack/attendance/${user?.id}`
-    );
+  const rawActive = rawList.find(
+    (x) => (x.oldestCheckIn || x.latestCheckIn || x.checkIn) && !x.latestCheckOut
+  );
 
-    console.log(
-      "RAW ATTENDANCE RESPONSE",
-      JSON.stringify(records, null, 2)
-    );
-
-    return {
-      active_session:
-        records.find(
-          (x: any) =>
-            x.latestCheckIn &&
-            !x.latestCheckOut
-        ) || null,
-
- sessions: records.map((item: any) => ({
-  id: item._id ?? item.date,
-
-  attendanceDate: item.attendanceDate ?? item.date,
-
-  checkIn: item.checkIn ?? item.latestCheckIn,
-
-  checkOut: item.checkOut ?? item.latestCheckOut,
-
-  durationMinutes:
-    item.durationMinutes ??
-    item.totalDurationMinutes ??
-    0,
-
-  totalDurationMinutes: item.totalDurationMinutes ?? 0,
-
-  totalDurationFormatted:
-    item.totalDurationFormatted ?? "0h 0m",
-
-  totalSessions: item.totalSessions ?? 0,
-
-  status:
-    item.latestCheckIn && !item.latestCheckOut
-      ? "OPEN"
-      : item.latestCheckIn && item.latestCheckOut
-      ? "CLOSED"
-      : item.status,
-})),
-    };
-  },
+  return {
+    active_session: rawActive ? mapRecord(rawActive) : null,  // ← mapped, not raw
+    sessions: rawList.map(mapRecord),
+  };
+},
   async getManagerAttendance() {
     const res = await api.get('/manager/attendance/today');
     return res.data;

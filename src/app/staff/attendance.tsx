@@ -335,8 +335,8 @@ export default function StaffAttendanceScreen() {
       (item) => item.attendanceDate === today
     );
   const isCheckedIn =
-    !!activeSession?.latestCheckIn &&
-    !activeSession?.latestCheckOut;
+    !!activeSession?.checkIn &&
+    !activeSession?.checkOut;
   const summary = graph?.summary;
 
   // ── Render ───────────────────────────────────────────────────────────────────
